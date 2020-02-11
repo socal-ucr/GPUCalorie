@@ -1429,24 +1429,32 @@ void shader_core_ctx::mem_instruction_stats(const warp_inst_t &inst) {
       m_stats->gpgpu_n_shmem_insn += active_count;
       break;
     case sstarr_space:
+      update_instr_stats(inst.pc, IS_SSTAR_INST , 1);//<AliJahan stats>
       m_stats->gpgpu_n_sstarr_insn += active_count;
       break;
     case const_space:
+      update_instr_stats(inst.pc, IS_CONST_INST , 1);//<AliJahan stats>
       m_stats->gpgpu_n_const_insn += active_count;
       break;
     case param_space_kernel:
     case param_space_local:
+      update_instr_stats(inst.pc, IS_PARAM_INST , 1);//<AliJahan stats>
       m_stats->gpgpu_n_param_insn += active_count;
       break;
     case tex_space:
+      update_instr_stats(inst.pc, IS_TEX_INST , 1);//<AliJahan stats>
       m_stats->gpgpu_n_tex_insn += active_count;
       break;
     case global_space:
     case local_space:
-      if (inst.is_store())
+      if (inst.is_store()) {
+        update_instr_stats(inst.pc, NB_ST, inst.active_count());//<AliJahan stats>
         m_stats->gpgpu_n_store_insn += active_count;
-      else
+      }
+      else {
+        update_instr_stats(inst.pc, NB_LD, inst.active_count());//<AliJahan stats>
         m_stats->gpgpu_n_load_insn += active_count;
+      }
       break;
     default:
       abort();

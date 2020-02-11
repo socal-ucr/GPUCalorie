@@ -66,4 +66,21 @@ class ptx_stats {
   void ptx_file_line_stats_sub_inflight_memory_insn(int sc_id, unsigned pc);
   void ptx_file_line_stats_add_warp_divergence(unsigned pc,
                                                unsigned n_way_divergence);
+//<AliJahan/>
+  enum instr_stats_t {T_DECODE = 0, T_ALU = 1,
+                    T_FP  = 2, T_INT_MUL  = 3, T_TEX = 4, 
+                    T_FP_MUL = 5, T_TRANS = 6, T_INT_DIV = 7, 
+                    T_FP_DIV = 8, T_INT = 9, T_SP = 10, T_SFU = 11, T_DP = 12, 
+                    T_FP_SQRT = 13, T_FP_LG = 14, T_FP_EXP = 15, T_FP_SIN = 16, 
+                    T_COLL_UNT = 17, T_TENSOR = 18, NB_MEM_ACC = 19,
+                    NB_RF_RD = 20, NB_RF_WR = 21, NB_NON_RF_OPRND = 22,
+                    T_INT_MUL24 = 23, T_INT_MUL32 = 24, DIVERGENCE = 25,
+                    NB_LD = 26, NB_ST = 27, IS_SHMEM_INST = 28, 
+                    IS_SSTAR_INST = 29, IS_TEX_INST = 30, IS_CONST_INST = 31, IS_PARAM_INST = 32,
+                    NB_LOCAL_MEM_RD = 33, NB_LOCAL_MEM_WR = 34, NB_TEX_MEM = 35, 
+                    NB_CONST_MEM = 36, NB_GLOB_MEM_RD = 37, NB_GLOB_MEM_WR = 38,
+                    IC_HIT = 39, IC_MISS = 40, DC_L1_LD = 41, DC_L1_ST = 42
+                    };
+  void update_instr_stats(unsigned, enum instr_stats_t, int);
+//</AliJahan>
 };

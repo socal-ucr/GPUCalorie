@@ -692,6 +692,7 @@ class opndcoll_rfu_t {  // operand collector based register file unit
     // modifiers
     void reset() { m_valid = false; }
 
+    const warp_inst_t *get_warp() { return m_warp;} //<AliJahan>
    private:
     bool m_valid;
     collector_unit_t *m_cu;
@@ -889,7 +890,7 @@ class opndcoll_rfu_t {  // operand collector based register file unit
     unsigned get_num_regs() const { return m_warp->get_num_regs(); }
     void dispatch();
     bool is_free() { return m_free; }
-
+    warp_inst_t  *get_warp() {return m_warp;} //<AliJahan>
    private:
     bool m_free;
     unsigned m_cuid;  // collector unit hw id

@@ -88,7 +88,12 @@ class ptx_file_line_stats {
         gmem_n_access_total(0),
         gmem_warp_count(0),
         exposed_latency(0),
-        warp_divergence(0) {}
+        warp_divergence(0)
+    { /*<AliJahan/>*/
+        for(int i=0; i<42; i++)
+            pi_stats[i] = 0;
+      /*</AliJahan>*/
+    }
 
   unsigned long exec_count;
   unsigned long long latency;
@@ -105,6 +110,9 @@ class ptx_file_line_stats {
                                        // (attributed to this instruction)
   unsigned long long
       warp_divergence;  // number of warp divergence occured at this instruction
+  //<AliJahan/>
+  std::unordered_map<int, unsigned long long> pi_stats;
+  //</AliJahan>
 };
 
 #if (tr1_hash_map_ismap == 1)
@@ -132,22 +140,26 @@ void ptx_stats::ptx_file_line_stats_write_file() {
   FILE *pfile;
 
   pfile = fopen(ptx_line_stats_filename, "w");
-  fprintf(
-      pfile,
-      "kernel line : count latency dram_traffic smem_bk_conflicts smem_warp "
-      "gmem_access_generated gmem_warp exposed_latency warp_divergence\n");
-  for (it = ptx_file_line_stats_tracker.begin();
-       it != ptx_file_line_stats_tracker.end(); it++) {
-    fprintf(pfile, "%s %i : ", it->first.st.c_str(), it->first.line);
-    fprintf(pfile, "%lu ", it->second.exec_count);
-    fprintf(pfile, "%llu ", it->second.latency);
-    fprintf(pfile, "%llu ", it->second.dram_traffic);
-    fprintf(pfile, "%llu ", it->second.smem_n_way_bank_conflict_total);
-    fprintf(pfile, "%lu ", it->second.smem_warp_count);
-    fprintf(pfile, "%llu ", it->second.gmem_n_access_total);
-    fprintf(pfile, "%lu ", it->second.gmem_warp_count);
-    fprintf(pfile, "%llu ", it->second.exposed_latency);
-    fprintf(pfile, "%llu ", it->second.warp_divergence);
+
+  // fprintf(pfile,"kernel line : count latency dram_traffic smem_bk_conflicts smem_warp gmem_access_generated gmem_warp exposed_latency warp_divergence\n");//<AliJahan> original
+  fprintf(pfile,"LINE#, INSTR_CNT, T_DECODE, T_ALU, T_FP, T_INT_MUL, T_TEX, T_FP_MUL, T_TRANS, T_INT_DIV, T_FP_DIV, T_INT, T_SP, T_SFU, T_DP, T_FP_SQRT, T_FP_LG, T_FP_EXP, T_FP_SIN, T_COLL_UNT, T_TENSOR, NB_MEM_ACC, NB_RF_RD, NB_RF_WR, NB_NON_RF_OPRND, T_INT_MUL24, T_INT_MUL32, DIVERGENCE, NB_LD, NB_ST, IS_SHMEM_INST, IS_SSTAR_INST, IS_TEX_INST, IS_CONST_INST, IS_PARAM_INST, NB_LOCAL_MEM_RD, NB_LOCAL_MEM_WR, NB_TEX_MEM, NB_CONST_MEM, NB_GLOB_MEM_RD, NB_GLOB_MEM_WR, IC_HIT, IC_MISS, DC_L1_LD, DC_L1_ST,\n");//<AliJahan>
+  for( it=ptx_file_line_stats_tracker.begin(); it != ptx_file_line_stats_tracker.end(); it++ ) {
+    // fprintf(pfile, "%s %i : ", it->first.st.c_str(), it->first.line);
+    fprintf(pfile, "%i, ", it->first.line);//<AliJahan>
+    fprintf(pfile, "%lu, ", it->second.exec_count);//<AliJahan>
+    // fprintf(pfile, "%llu ", it->second.latency); //<AliJahan> original
+    // fprintf(pfile, "%llu ", it->second.dram_traffic); //<AliJahan> original
+    // fprintf(pfile, "%llu ", it->second.smem_n_way_bank_conflict_total); //<AliJahan> original
+    // fprintf(pfile, "%lu ", it->second.smem_warp_count); //<AliJahan> original
+    // fprintf(pfile, "%llu ", it->second.gmem_n_access_total); //<AliJahan> original
+    // fprintf(pfile, "%lu ", it->second.gmem_warp_count); //<AliJahan> original
+    // fprintf(pfile, "%llu ", it->second.exposed_latency); //<AliJahan> original
+    // fprintf(pfile, "%llu ", it->second.warp_divergence);
+    //<AliJahan/>
+    for(int i=0; i<43; i++){
+        fprintf(pfile, "%llu, ", it->second.pi_stats[i]);
+    }
+    //</AliJahan>
     fprintf(pfile, "\n");
   }
   fflush(pfile);
@@ -161,6 +173,14 @@ void ptx_file_line_stats_add_exec_count(const ptx_instruction *pInsn) {
                                             pInsn->source_line())]
       .exec_count += 1;
 }
+//<AliJahan/>
+void update_instr_stats(unsigned pc, enum instr_stats_t stat, int val){
+    const ptx_instruction *pInsn = function_info::pc_to_instruction(pc);
+    ptx_file_line_stats_tracker[ptx_file_line(pInsn->source_file(), pInsn->source_line())].pi_stats[stat] += val;
+    // printf("stat #: %d  val:%llu set:%d\n", stat, ptx_file_line_stats_tracker[ptx_file_line(pInsn->source_file(), pInsn->source_line())].pi_stats[stat], val);
+    // fflush(stdout);
+}
+//</AliJahan>
 
 // attribute pipeline latency to this ptx instruction (specified by the pc)
 // pipeline latency is the number of cycles a warp with this instruction spent

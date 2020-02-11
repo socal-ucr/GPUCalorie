@@ -856,6 +856,7 @@ void shader_core_ctx::decode() {
     m_warp[m_inst_fetch_buffer.m_warp_id]->ibuffer_fill(0, pI1);
     m_warp[m_inst_fetch_buffer.m_warp_id]->inc_inst_in_pipeline();
     if (pI1) {
+      update_instr_stats(pI1->pc, T_DECODE, 1);//<AliJahan stats>
       m_stats->m_num_decoded_insn[m_sid]++;
       if (pI1->oprnd_type == INT_OP) {
         m_stats->m_num_INTdecoded_insn[m_sid]++;
@@ -865,6 +866,7 @@ void shader_core_ctx::decode() {
       const warp_inst_t *pI2 =
           get_next_inst(m_inst_fetch_buffer.m_warp_id, pc + pI1->isize);
       if (pI2) {
+        update_instr_stats(pI2->pc, T_DECODE, 1);//<AliJahan stats>
         m_warp[m_inst_fetch_buffer.m_warp_id]->ibuffer_fill(1, pI2);
         m_warp[m_inst_fetch_buffer.m_warp_id]->inc_inst_in_pipeline();
         m_stats->m_num_decoded_insn[m_sid]++;
@@ -962,10 +964,12 @@ void shader_core_ctx::fetch() {
             m_last_warp_fetched = warp_id;
             m_warp[warp_id]->set_imiss_pending();
             m_warp[warp_id]->set_last_fetch(m_gpu->gpu_sim_cycle);
+            update_instr_stats(m_warp[warp_id].get_pc(), IC_MISS, 1);//<AliJahan stats>
           } else if (status == HIT) {
             m_last_warp_fetched = warp_id;
             m_inst_fetch_buffer = ifetch_buffer_t(pc, nbytes, warp_id);
             m_warp[warp_id]->set_last_fetch(m_gpu->gpu_sim_cycle);
+            update_instr_stats(m_warp[warp_id].get_pc(), IC_HIT, 1);//<AliJahan stats>
             delete mf;
           } else {
             m_last_warp_fetched = warp_id;
@@ -1297,6 +1301,7 @@ void scheduler_unit::cycle() {
                   issued_inst = true;
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type = exec_unit_type_t::SP;
+                  update_instr_stats(pI->pc, T_SP, active_mask.count());//<AliJahan stats>
                 } else if (execute_on_INT) {
                   m_shader->issue_warp(*m_int_out, pI, active_mask, warp_id,
                                        m_id);
@@ -1304,6 +1309,7 @@ void scheduler_unit::cycle() {
                   issued_inst = true;
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type = exec_unit_type_t::INT;
+                  update_instr_stats(pI->pc, T_INT, active_mask.count());//<AliJahan stats>
                 }
               } else if ((m_shader->m_config->gpgpu_num_dp_units > 0) &&
                          (pI->op == DP_OP) &&
@@ -1316,6 +1322,7 @@ void scheduler_unit::cycle() {
                   issued_inst = true;
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type = exec_unit_type_t::DP;
+                  update_instr_stats(pI->pc, T_DP, active_mask.count());//<AliJahan stats>
                 }
               }  // If the DP units = 0 (like in Fermi archi), then execute DP
                  // inst on SFU unit
@@ -1331,6 +1338,7 @@ void scheduler_unit::cycle() {
                   issued_inst = true;
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type = exec_unit_type_t::SFU;
+                  update_instr_stats(pI->pc, T_SFU, active_mask.count());//<AliJahan stats>
                 }
               } else if ((pI->op == TENSOR_CORE_OP) &&
                          !(diff_exec_units && previous_issued_inst_exec_type ==
@@ -1342,6 +1350,7 @@ void scheduler_unit::cycle() {
                   issued_inst = true;
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type = exec_unit_type_t::TENSOR;
+                  update_instr_stats(pI->pc, T_TENSOR, active_mask.count());//<AliJahan stats>
                 }
               } else if ((pI->op >= SPEC_UNIT_START_ID) &&
                          !(diff_exec_units &&
@@ -2961,7 +2970,11 @@ void warp_inst_t::print(FILE *fout) const {
   fprintf(fout, "\n");
 }
 void shader_core_ctx::incexecstat(warp_inst_t *&inst) {
-  if (inst->mem_op == TEX) inctex_stat(inst->active_count(), 1);
+
+  if (inst->mem_op == TEX){
+      update_instr_stats(inst->pc, T_TEX, 1);//<AliJahan stats>
+      inctex_stat(inst->active_count(), 1);
+  }
 
   // Latency numbers for next operations are used to scale the power values
   // for special operations, according observations from microbenchmarking
@@ -2970,38 +2983,50 @@ void shader_core_ctx::incexecstat(warp_inst_t *&inst) {
   switch (inst->sp_op) {
     case INT__OP:
       incialu_stat(inst->active_count(), 32);
+      update_instr_stats(inst->pc, T_ALU, inst->active_count());//<AliJahan stats>
       break;
     case INT_MUL_OP:
+      update_instr_stats(inst->pc, T_INT_MUL, inst->active_count());//<AliJahan stats>
       incimul_stat(inst->active_count(), 7.2);
       break;
     case INT_MUL24_OP:
+      update_instr_stats(inst->pc, T_INT_MUL24, inst->active_count());//<AliJahan stats>
       incimul24_stat(inst->active_count(), 4.2);
       break;
     case INT_MUL32_OP:
+      update_instr_stats(inst->pc, T_INT_MUL32, inst->active_count());//<AliJahan stats>
       incimul32_stat(inst->active_count(), 4);
       break;
     case INT_DIV_OP:
+      update_instr_stats(inst->pc, T_INT_DIV, inst->active_count());//<AliJahan stats>
       incidiv_stat(inst->active_count(), 40);
       break;
     case FP__OP:
+      update_instr_stats(inst->pc, T_FP, inst->active_count());//<AliJahan stats>
       incfpalu_stat(inst->active_count(), 1);
       break;
     case FP_MUL_OP:
+      update_instr_stats(inst->pc, T_FP_MUL, inst->active_count());//<AliJahan stats>
       incfpmul_stat(inst->active_count(), 1.8);
       break;
     case FP_DIV_OP:
+      update_instr_stats(inst->pc, T_FP_DIV, inst->active_count());//<AliJahan stats>
       incfpdiv_stat(inst->active_count(), 48);
       break;
     case FP_SQRT_OP:
+      update_instr_stats(inst->pc, T_FP_SQRT, inst->active_count());//<AliJahan stats>
       inctrans_stat(inst->active_count(), 25);
       break;
     case FP_LG_OP:
+      update_instr_stats(inst->pc, T_FP_LG, inst->active_count());//<AliJahan stats>
       inctrans_stat(inst->active_count(), 35);
       break;
     case FP_SIN_OP:
+      update_instr_stats(inst->pc, T_FP_SIN, inst->active_count());//<AliJahan stats>
       inctrans_stat(inst->active_count(), 12);
       break;
     case FP_EXP_OP:
+      update_instr_stats(inst->pc, T_FP_EXP, inst->active_count());//<AliJahan stats>
       inctrans_stat(inst->active_count(), 35);
       break;
     default:
@@ -3928,6 +3953,8 @@ bool opndcoll_rfu_t::writeback(warp_inst_t &inst) {
       m_shader->incregfile_writes(
           m_shader->get_config()->warp_size);  // inst.active_count());
     }
+          if(inst.valid())
+              update_instr_stats(inst.pc, NB_RF_WR, inst.active_count());//<AliJahan stats>
   }
   return true;
 }
@@ -3952,9 +3979,11 @@ void opndcoll_rfu_t::dispatch_ready_cu() {
             }
           }
           m_shader->incnon_rf_operands(active_count);
+          update_instr_stats(cu->get_warp()->pc, NB_NON_RF_OPRND, cu->get_warp()->active_count());//<AliJahan stats>
         } else {
           m_shader->incnon_rf_operands(
-              m_shader->get_config()->warp_size);  // cu->get_active_count());
+            m_shader->get_config()->warp_size);  // cu->get_active_count());
+            update_instr_stats(cu->get_warp()->pc, NB_NON_RF_OPRND, cu->get_warp()->active_count());//<AliJahan stats>
         }
       }
       cu->dispatch();
@@ -3973,6 +4002,8 @@ void opndcoll_rfu_t::allocate_cu(unsigned port_num) {
         for (unsigned k = 0; k < cu_set.size(); k++) {
           if (cu_set[k].is_free()) {
             collector_unit_t *cu = &cu_set[k];
+            if(cu->get_warp()->valid())//<AliJahan>
+              update_instr_stats(cu->get_warp()->pc, T_COLL_UNT, cu->get_warp()->active_count());//<AliJahan stats>
             allocated = cu->allocate(inp.m_in[i], inp.m_out[i]);
             m_arbiter.add_read_requests(cu);
             break;
@@ -4024,6 +4055,8 @@ void opndcoll_rfu_t::allocate_reads() {
       m_shader->incregfile_reads(
           m_shader->get_config()->warp_size);  // op.get_active_count());
     }
+    if(m_cu[cu]->get_warp()->valid()) //<AliJahan>
+      update_instr_stats(m_cu[cu]->get_warp()->pc, NB_RF_RD, m_cu[cu]->get_warp()->active_count());//<AliJahan stats>
   }
 }
 
@@ -4247,23 +4280,29 @@ void simt_core_cluster::icnt_inject_request_packet(class mem_fetch *mf) {
     m_stats->made_read_mfs++;
   switch (mf->get_access_type()) {
     case CONST_ACC_R:
+      update_instr_stats(mf->get_inst().pc, NB_CONST_MEM, mf->get_inst().active_count());//<AliJahan stats>
       m_stats->gpgpu_n_mem_const++;
       break;
     case TEXTURE_ACC_R:
+      update_instr_stats(mf->get_inst().pc, NB_TEX_MEM, mf->get_inst().active_count());//<AliJahan stats>
       m_stats->gpgpu_n_mem_texture++;
       break;
     case GLOBAL_ACC_R:
+      update_instr_stats(mf->get_inst().pc, NB_GLOB_MEM_RD, mf->get_inst().active_count());//<AliJahan stats>
       m_stats->gpgpu_n_mem_read_global++;
       break;
     // case GLOBAL_ACC_R: m_stats->gpgpu_n_mem_read_global++;
     // printf("read_global%d\n",m_stats->gpgpu_n_mem_read_global); break;
     case GLOBAL_ACC_W:
+      update_instr_stats(mf->get_inst().pc, NB_GLOB_MEM_WR, mf->get_inst().active_count());//<AliJahan stats>
       m_stats->gpgpu_n_mem_write_global++;
       break;
     case LOCAL_ACC_R:
+      update_instr_stats(mf->get_inst().pc, NB_LOCAL_MEM_RD, mf->get_inst().active_count());//<AliJahan stats>
       m_stats->gpgpu_n_mem_read_local++;
       break;
     case LOCAL_ACC_W:
+      update_instr_stats(mf->get_inst().pc, NB_LOCAL_MEM_WR, mf->get_inst().active_count());//<AliJahan stats>
       m_stats->gpgpu_n_mem_write_local++;
       break;
     case INST_ACC_R:

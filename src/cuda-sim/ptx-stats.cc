@@ -142,11 +142,11 @@ void ptx_stats::ptx_file_line_stats_write_file() {
   pfile = fopen(ptx_line_stats_filename, "w");
 
   // fprintf(pfile,"kernel line : count latency dram_traffic smem_bk_conflicts smem_warp gmem_access_generated gmem_warp exposed_latency warp_divergence\n");//<AliJahan> original
-  fprintf(pfile,"LINE#, INSTR_CNT, T_DECODE, T_ALU, T_FP, T_INT_MUL, T_TEX, T_FP_MUL, T_TRANS, T_INT_DIV, T_FP_DIV, T_INT, T_SP, T_SFU, T_DP, T_FP_SQRT, T_FP_LG, T_FP_EXP, T_FP_SIN, T_COLL_UNT, T_TENSOR, NB_MEM_ACC, NB_RF_RD, NB_RF_WR, NB_NON_RF_OPRND, T_INT_MUL24, T_INT_MUL32, DIVERGENCE, NB_LD, NB_ST, IS_SHMEM_INST, IS_SSTAR_INST, IS_TEX_INST, IS_CONST_INST, IS_PARAM_INST, NB_LOCAL_MEM_RD, NB_LOCAL_MEM_WR, NB_TEX_MEM, NB_CONST_MEM, NB_GLOB_MEM_RD, NB_GLOB_MEM_WR, IC_HIT, IC_MISS, DC_L1_LD, DC_L1_ST,\n");//<AliJahan>
+  fprintf(pfile,"T_DECODE, T_ALU, T_FP, T_INT_MUL, T_FP_MUL, T_TRANS, T_INT_DIV, T_FP_DIV, T_SP, T_SFU, T_DP, NB_RF_RD, NB_RF_WR, T_INT_MUL24, T_INT_MUL32, SP_ACC, SFU_ACC, FPU_ACC,\n");//<AliJahan>
   for( it=ptx_file_line_stats_tracker.begin(); it != ptx_file_line_stats_tracker.end(); it++ ) {
     // fprintf(pfile, "%s %i : ", it->first.st.c_str(), it->first.line);
-    fprintf(pfile, "%i, ", it->first.line);//<AliJahan>
-    fprintf(pfile, "%lu, ", it->second.exec_count);//<AliJahan>
+    //fprintf(pfile, "%i, ", it->first.line);//<AliJahan>
+    //fprintf(pfile, "%lu, ", it->second.exec_count);//<AliJahan>
     // fprintf(pfile, "%llu ", it->second.latency); //<AliJahan> original
     // fprintf(pfile, "%llu ", it->second.dram_traffic); //<AliJahan> original
     // fprintf(pfile, "%llu ", it->second.smem_n_way_bank_conflict_total); //<AliJahan> original
@@ -156,9 +156,14 @@ void ptx_stats::ptx_file_line_stats_write_file() {
     // fprintf(pfile, "%llu ", it->second.exposed_latency); //<AliJahan> original
     // fprintf(pfile, "%llu ", it->second.warp_divergence);
     //<AliJahan/>
-    for(int i=0; i<43; i++){
-        fprintf(pfile, "%llu, ", it->second.pi_stats[i]);
+    for(int i=0; i<25; i++){
+      if( i==4 || i==9 || (i=>13 && i<=19) || i==22)
+        continue;
+      fprintf(pfile, "%llu, ", it->second.pi_stats[i]);
     }
+    fprintf(pfile, "%llu, ", it->second.pi_stats[1]);
+    fprintf(pfile, "%llu, ", (it->second.pi_stats[7]+it->second.pi_stats[24]+it->second.pi_stats[13]+it->second.pi_stats[14]+it->second.pi_stats[15]+it->second.pi_stats[16]));
+    fprintf(pfile, "%llu, ", (it->second.pi_stats[2]+it->second.pi_stats[8]+it->second.pi_stats[5]+it->second.pi_stats[23]+it->second.pi_stats[3]));
     //</AliJahan>
     fprintf(pfile, "\n");
   }

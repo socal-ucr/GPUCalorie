@@ -3020,18 +3020,22 @@ void shader_core_ctx::incexecstat(warp_inst_t *&inst) {
       break;
     case FP_SQRT_OP:
       update_instr_stats(inst->pc, T_FP_SQRT, inst->active_count());//<AliJahan stats>
+      update_instr_stats(inst->pc, T_TRANS, inst->active_count());//<AliJahan stats>
       inctrans_stat(inst->active_count(), 25);
       break;
     case FP_LG_OP:
       update_instr_stats(inst->pc, T_FP_LG, inst->active_count());//<AliJahan stats>
+      update_instr_stats(inst->pc, T_TRANS, inst->active_count());//<AliJahan stats>
       inctrans_stat(inst->active_count(), 35);
       break;
     case FP_SIN_OP:
       update_instr_stats(inst->pc, T_FP_SIN, inst->active_count());//<AliJahan stats>
+      update_instr_stats(inst->pc, T_TRANS, inst->active_count());//<AliJahan stats>
       inctrans_stat(inst->active_count(), 12);
       break;
     case FP_EXP_OP:
       update_instr_stats(inst->pc, T_FP_EXP, inst->active_count());//<AliJahan stats>
+      update_instr_stats(inst->pc, T_TRANS, inst->active_count());//<AliJahan stats>
       inctrans_stat(inst->active_count(), 35);
       break;
     default:

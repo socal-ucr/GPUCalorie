@@ -157,7 +157,7 @@ void ptx_stats::ptx_file_line_stats_write_file() {
     // fprintf(pfile, "%llu ", it->second.warp_divergence);
     //<AliJahan/>
     for(int i=0; i<25; i++){
-      if( i==4 || i==9 || (i=>13 && i<=19) || i==22)
+      if( i==4 || i==9 || (i>=13 && i<=19) || i==22)
         continue;
       fprintf(pfile, "%llu, ", it->second.pi_stats[i]);
     }

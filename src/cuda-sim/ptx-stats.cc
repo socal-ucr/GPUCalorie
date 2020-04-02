@@ -176,7 +176,7 @@ void ptx_file_line_stats_add_exec_count(const ptx_instruction *pInsn) {
 //<AliJahan/>
 void update_instr_stats(unsigned pc, enum instr_stats_t stat, int val){
     const ptx_instruction *pInsn = function_info::pc_to_instruction(pc);
-    ptx_file_line_stats_tracker[ptx_file_line(pInsn->source_file(), pInsn->source_line())].pi_stats[stat] += val;
+    ptx_file_line_stats_tracker[ptx_file_line(pInsn->source_file(), pInsn->source_line())].pi_stats[stat] += 1;
     // printf("stat #: %d  val:%llu set:%d\n", stat, ptx_file_line_stats_tracker[ptx_file_line(pInsn->source_file(), pInsn->source_line())].pi_stats[stat], val);
     // fflush(stdout);
 }

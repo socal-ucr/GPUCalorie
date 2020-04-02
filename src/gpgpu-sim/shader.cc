@@ -2139,6 +2139,7 @@ void sfu::issue(register_set &source_reg) {
 
   (*ready_reg)->op_pipe = SFU__OP;
   m_core->incsfu_stat(m_core->get_config()->warp_size, (*ready_reg)->latency);
+  update_instr_stats((*ready_reg)->pc, T_SFU, (*ready_reg)->active_count());//<AliJahan stats>
   pipelined_simd_unit::issue(source_reg);
 }
 
@@ -2148,6 +2149,7 @@ void tensor_core::issue(register_set &source_reg) {
 
   (*ready_reg)->op_pipe = TENSOR_CORE__OP;
   m_core->incsfu_stat(m_core->get_config()->warp_size, (*ready_reg)->latency);
+  update_instr_stats((*ready_reg)->pc, T_TENSOR, (*ready_reg)->active_count());//<AliJahan stats>
   pipelined_simd_unit::issue(source_reg);
 }
 
@@ -2246,6 +2248,7 @@ void sp_unit ::issue(register_set &source_reg) {
   // m_core->incexecstat((*ready_reg));
   (*ready_reg)->op_pipe = SP__OP;
   m_core->incsp_stat(m_core->get_config()->warp_size, (*ready_reg)->latency);
+  update_instr_stats((*ready_reg)->pc, T_SP, (*ready_reg)->active_count());//<AliJahan stats>
   pipelined_simd_unit::issue(source_reg);
 }
 
@@ -2254,6 +2257,7 @@ void dp_unit ::issue(register_set &source_reg) {
   // m_core->incexecstat((*ready_reg));
   (*ready_reg)->op_pipe = DP__OP;
   m_core->incsp_stat(m_core->get_config()->warp_size, (*ready_reg)->latency);
+  update_instr_stats((*ready_reg)->pc, T_DP, (*ready_reg)->active_count());//<AliJahan stats>
   pipelined_simd_unit::issue(source_reg);
 }
 
@@ -2270,6 +2274,7 @@ void int_unit ::issue(register_set &source_reg) {
   // m_core->incexecstat((*ready_reg));
   (*ready_reg)->op_pipe = INTP__OP;
   m_core->incsp_stat(m_core->get_config()->warp_size, (*ready_reg)->latency);
+  update_instr_stats((*ready_reg)->pc, T_INT, (*ready_reg)->active_count());//<AliJahan stats>
   pipelined_simd_unit::issue(source_reg);
 }
 

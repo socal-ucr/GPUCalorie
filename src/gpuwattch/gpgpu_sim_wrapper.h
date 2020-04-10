@@ -101,12 +101,6 @@ class gpgpu_sim_wrapper {
                               double sfu_avg_active_lane);
   void set_NoC_power(double noc_tot_reads, double noc_tot_write);
   bool sanity_check(double a, double b);
-  //<AliJahan/>
-  std::map<string, int> accumulative_stats;
-  static string stats[29];
-  void clear_accumulative_stats();
-  void print_accumulative_stats();
-  //</AliJahan>
 
  private:
   void print_steady_state(int position, double init_val);

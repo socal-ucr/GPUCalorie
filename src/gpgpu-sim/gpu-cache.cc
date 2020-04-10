@@ -1661,10 +1661,10 @@ enum cache_request_status data_cache::access(new_addr_type addr, mem_fetch *mf,
   if(mf->get_inst().valid()){
     if(wr)
       // ptx_file_line_stats_add_dcL1_store_count(mf->get_inst().pc);
-      update_instr_stats(mf->get_inst().pc, DC_L1_ST, mf->get_inst().active_count());//<AliJahan stats>
+      update_instr_stats(mf->get_inst().pc, DC_L1_ST_CNTR, mf->get_inst().active_count());//<AliJahan stats>
     else
         // ptx_file_line_stats_add_dcL1_load_count(mf->get_inst().pc);
-        update_instr_stats(mf->get_inst().pc, DC_L1_LD, mf->get_inst().active_count());//<AliJahan stats>
+        update_instr_stats(mf->get_inst().pc, DC_L1_LD_CNTR, mf->get_inst().active_count());//<AliJahan stats>
   }
   //</AliJahan>
   new_addr_type block_addr = m_config.block_addr(addr);

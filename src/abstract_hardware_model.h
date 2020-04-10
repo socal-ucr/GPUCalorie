@@ -166,6 +166,12 @@ enum _memory_op_t { no_memory_op = 0, memory_load, memory_store };
 #if !defined(__VECTOR_TYPES_H__)
 #include "vector_types.h"
 #endif
+
+//<AliJahan/>
+#include "cuda-sim/ptx-stats.h"
+typedef std::bitset<COUNTERS_SIZE> counters_mask_t;
+//<AliJahan/>
+
 struct dim3comp {
   bool operator()(const dim3 &a, const dim3 &b) const {
     if (a.z < b.z)
@@ -894,6 +900,7 @@ class inst_t {
     pc = (address_type)-1;
     reconvergence_pc = (address_type)-1;
     op = NO_OP;
+    counters_mask.reset();  //<AliJahan>
     bar_type = NOT_BAR;
     red_type = NOT_RED;
     bar_id = (unsigned)-1;
@@ -940,6 +947,14 @@ class inst_t {
   address_type pc;  // program counter address of instruction
   unsigned isize;   // size of instruction in bytes
   op_type op;       // opcode (uarch visible)
+
+  //<AliJahan/>
+  counters_mask_t counters_mask;   
+  const counters_mask_t & get_counters_mask() const
+  {
+    return counters_mask;
+  }
+  //</AliJahan>
 
   barrier_type bar_type;
   reduction_type red_type;

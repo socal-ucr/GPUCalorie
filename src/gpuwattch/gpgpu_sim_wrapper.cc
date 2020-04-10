@@ -31,31 +31,6 @@
 #define SP_BASE_POWER 0
 #define SFU_BASE_POWER 0
 
-//<AliJahan/>
-string gpgpu_sim_wrapper::stats[29] = {
-    "IC_H", "IC_M", "DC_RH", "DC_RM", "DC_WH", "DC_WM", 
-    "TC_H", "TC_M", "CC_H", "CC_M", "SHRD_ACC", "REG_R",
-    "REG_W", "NON_REG_OPs", "SFU_ACC", "SP_ACC", "FPU_ACC", 
-    "TOT_INST", "FP_INT", "DRAM_RD",  "DRAM_WR", "DRAM_PRE", 
-    "L2_RH", "L2_RM", "L2_WH", "L2_WM", "PIPE", "NOC_A", "IDLE_CORE_N"};
-
-
-void gpgpu_sim_wrapper::clear_accumulative_stats(){
-	for(int i=0;i<29;i++){
-		accumulative_stats[stats[i]]=0;
-	}
-}
-
-void gpgpu_sim_wrapper::print_accumulative_stats(){
-	for(int i=0;i<29;i++)
-		powerfile <<stats[i] <<",";
-	powerfile <<"\n";
-	for(int i=0;i<29;i++)
-		powerfile<<accumulative_stats[stats[i]]<<",";
-	powerfile <<"\n";
-} 
-//</AliJahan>
-
 enum pwr_cmp_t {
   IBP = 0,
   ICP,
@@ -232,7 +207,6 @@ void gpgpu_sim_wrapper::init_mcpat(
     powerfile.open(g_power_filename);
     int flg = chmod(g_power_filename, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     assert(flg == 0);
-    clear_accumulative_stats();//AliJahan
   }
   sample_val = 0;
   init_inst_val = init_val;  // gpu_tot_sim_insn+gpu_sim_insn;
@@ -276,10 +250,6 @@ void gpgpu_sim_wrapper::set_inst_power(bool clk_gated_lanes, double tot_cycles,
   p->sys.core[0].committed_instructions = committed_inst;
   sample_perf_counters[FP_INT] = int_inst + fp_inst;
   sample_perf_counters[TOT_INST] = tot_inst;
-  //<AliJahan/>
-  accumulative_stats["FP_INT"] += int_inst+fp_inst;
-  accumulative_stats["TOT_INST"] += tot_inst;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_regfile_power(double reads, double writes,
@@ -293,11 +263,6 @@ void gpgpu_sim_wrapper::set_regfile_power(double reads, double writes,
   sample_perf_counters[REG_RD] = reads;
   sample_perf_counters[REG_WR] = writes;
   sample_perf_counters[NON_REG_OPs] = ops;
-  //<AliJahan/>
-  accumulative_stats["REG_R"] += reads;
-  accumulative_stats["REG_W"] += writes;
-  accumulative_stats["NON_REG_OPs"] += ops;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_icache_power(double hits, double misses) {
@@ -308,10 +273,6 @@ void gpgpu_sim_wrapper::set_icache_power(double hits, double misses) {
       misses * p->sys.scaling_coefficients[IC_M];
   sample_perf_counters[IC_H] = hits;
   sample_perf_counters[IC_M] = misses;
-  //<AliJahan/>
-  accumulative_stats["IC_H"] += hits;
-  accumulative_stats["IC_M"] += misses;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_ccache_power(double hits, double misses) {
@@ -324,10 +285,6 @@ void gpgpu_sim_wrapper::set_ccache_power(double hits, double misses) {
   sample_perf_counters[CC_M] = misses;
   // TODO: coalescing logic is counted as part of the caches power (this is not
   // valid for no-caches architectures)
-  //<AliJahan/>
-  accumulative_stats["CC_H"] += hits;
-  accumulative_stats["CC_M"] += misses;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_tcache_power(double hits, double misses) {
@@ -340,19 +297,12 @@ void gpgpu_sim_wrapper::set_tcache_power(double hits, double misses) {
   sample_perf_counters[TC_M] = misses;
   // TODO: coalescing logic is counted as part of the caches power (this is not
   // valid for no-caches architectures)
-  //<AliJahan/>
-  accumulative_stats["TC_H"] += hits;
-  accumulative_stats["TC_M"] += misses;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_shrd_mem_power(double accesses) {
   p->sys.core[0].sharedmemory.read_accesses =
       accesses * p->sys.scaling_coefficients[SHRD_ACC];
   sample_perf_counters[SHRD_ACC] = accesses;
-  //<AliJahan/>
-  accumulative_stats["SHRD_ACC"] += accesses;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_l1cache_power(double read_hits, double read_misses,
@@ -374,12 +324,6 @@ void gpgpu_sim_wrapper::set_l1cache_power(double read_hits, double read_misses,
   sample_perf_counters[DC_WM] = write_misses;
   // TODO: coalescing logic is counted as part of the caches power (this is not
   // valid for no-caches architectures)
-  //<AliJahan/>
-  accumulative_stats["DC_RH"] += read_hits;
-  accumulative_stats["DC_RM"] += read_misses;
-  accumulative_stats["DC_WH"] += write_hits;
-  accumulative_stats["DC_WM"] += write_misses;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_l2cache_power(double read_hits, double read_misses,
@@ -401,29 +345,17 @@ void gpgpu_sim_wrapper::set_l2cache_power(double read_hits, double read_misses,
   sample_perf_counters[L2_RM] = read_misses;
   sample_perf_counters[L2_WH] = write_hits;
   sample_perf_counters[L2_WM] = write_misses;
-  //<AliJahan/>
-  accumulative_stats["L2_RH"] += read_hits;
-  accumulative_stats["L2_RM"] += read_misses;
-  accumulative_stats["L2_WH"] += write_hits;
-  accumulative_stats["L2_WM"] += write_misses;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_idle_core_power(double num_idle_core) {
   p->sys.num_idle_cores = num_idle_core;
   sample_perf_counters[IDLE_CORE_N] = num_idle_core;
-  //<AliJahan/>
-  accumulative_stats["IDLE_CORE_N"] += num_idle_core;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_duty_cycle_power(double duty_cycle) {
   p->sys.core[0].pipeline_duty_cycle =
       duty_cycle * p->sys.scaling_coefficients[PIPE_A];
   sample_perf_counters[PIPE_A] = duty_cycle;
-  //<AliJahan/>
-  accumulative_stats["PIPE"] += duty_cycle;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_mem_ctrl_power(double reads, double writes,
@@ -436,11 +368,6 @@ void gpgpu_sim_wrapper::set_mem_ctrl_power(double reads, double writes,
   sample_perf_counters[MEM_RD] = reads;
   sample_perf_counters[MEM_WR] = writes;
   sample_perf_counters[MEM_PRE] = dram_precharge;
-  //<AliJahan/>
-  accumulative_stats["DRAM_RD"] += reads;
-  accumulative_stats["DRAM_WR"] += writes;
-  accumulative_stats["DRAM_PRE"] += dram_precharge;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_exec_unit_power(double fpu_accesses,
@@ -458,11 +385,6 @@ void gpgpu_sim_wrapper::set_exec_unit_power(double fpu_accesses,
   sample_perf_counters[SP_ACC] = ialu_accesses;
   sample_perf_counters[SFU_ACC] = sfu_accesses;
   sample_perf_counters[FPU_ACC] = fpu_accesses;
-  //<AliJahan/>
-  accumulative_stats["SFU_ACC"] += sfu_accesses;
-  accumulative_stats["SP_ACC"] += ialu_accesses;
-  accumulative_stats["FPU_ACC"] += fpu_accesses;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::set_active_lanes_power(double sp_avg_active_lane,
@@ -477,9 +399,6 @@ void gpgpu_sim_wrapper::set_NoC_power(double noc_tot_reads,
       noc_tot_reads * p->sys.scaling_coefficients[NOC_A] +
       noc_tot_writes * p->sys.scaling_coefficients[NOC_A];
   sample_perf_counters[NOC_A] = noc_tot_reads + noc_tot_writes;
-  //<AliJahan/>
-  accumulative_stats["NOC_A"] += noc_tot_reads+noc_tot_writes;
-  //</AliJahan>
 }
 
 void gpgpu_sim_wrapper::power_metrics_calculations() {

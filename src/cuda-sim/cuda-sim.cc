@@ -594,31 +594,70 @@ void ptx_instruction::set_mul_div_or_other_archop() {
       (m_opcode != BAR_OP) && (m_opcode != EXIT_OP) && (m_opcode != NOP_OP) &&
       (m_opcode != RETP_OP) && (m_opcode != RET_OP) && (m_opcode != CALLP_OP) &&
       (m_opcode != CALL_OP)) {
-    if (get_type() == F32_TYPE || get_type() == F64_TYPE ||
-        get_type() == FF64_TYPE) {
+  if(/*<AliJahan/>*/ get_type()==F16_TYPE ||
+     /*</AliJahan*/ get_type()==F32_TYPE ||
+     get_type() == F64_TYPE || get_type() == FF64_TYPE){
+      //<AliJahan/>
+      switch (get_type()){ // All FPs are FP&SP or DP 
+        case F64_TYPE: case FF64_TYPE:
+          counters_mask.set(DP_CNTR);
+          break;
+        default:
+          counters_mask.set(SP_CNTR);
+          counters_mask.set(FP_CNTR);
+          break;
+      }
+         //</AliJahan>
       switch (get_opcode()) {
         case MUL_OP:
         case MAD_OP:
+          //counters_mask.set(FP_CNTR);//<AliJahan> TODO
           sp_op = FP_MUL_OP;
           break;
         case DIV_OP:
+          counters_mask.set(SFU_CNTR);//<AliJahan> <from Daniel>
           sp_op = FP_DIV_OP;
           break;
         case LG2_OP:
+          counters_mask.reset(DP_CNTR);   //<AliJahan>
+          counters_mask.reset(SP_CNTR);   //<AliJahan>
+          counters_mask.reset(FP_CNTR);   //<AliJahan>
+          counters_mask.set(LG_CNTR);     //<AliJahan>
+          counters_mask.set(SFU_CNTR);    //<AliJahan> 
           sp_op = FP_LG_OP;
           break;
         case RSQRT_OP:
         case SQRT_OP:
+          counters_mask.reset(DP_CNTR);   //<AliJahan>
+          counters_mask.reset(SP_CNTR);   //<AliJahan>
+          counters_mask.reset(FP_CNTR);   //<AliJahan>
+          counters_mask.set(SQRT_CNTR);   //<AliJahan>
+          counters_mask.set(SFU_CNTR);    //<AliJahan> 
           sp_op = FP_SQRT_OP;
           break;
         case RCP_OP:
+          counters_mask.reset(DP_CNTR);   //<AliJahan>
+          counters_mask.reset(SP_CNTR);   //<AliJahan>
+          counters_mask.reset(FP_CNTR);   //<AliJahan>
+          counters_mask.set(RCP_CNTR);    //<AliJahan>
+          counters_mask.set(SFU_CNTR);    //<AliJahan> 
           sp_op = FP_DIV_OP;
           break;
         case SIN_OP:
         case COS_OP:
+          counters_mask.reset(DP_CNTR);   //<AliJahan>
+          counters_mask.reset(SP_CNTR);   //<AliJahan>
+          counters_mask.reset(FP_CNTR);   //<AliJahan>
+          counters_mask.set(SIN_CNTR);    //<AliJahan>
+          counters_mask.set(SFU_CNTR);    //<AliJahan> 
           sp_op = FP_SIN_OP;
           break;
         case EX2_OP:
+          counters_mask.reset(DP_CNTR);   //<AliJahan>
+          counters_mask.reset(SP_CNTR);   //<AliJahan>
+          counters_mask.reset(FP_CNTR);   //<AliJahan>
+          counters_mask.set(EXP_CNTR);    //<AliJahan>
+          counters_mask.set(SFU_CNTR);    //<AliJahan> 
           sp_op = FP_EXP_OP;
           break;
         default:
@@ -629,10 +668,12 @@ void ptx_instruction::set_mul_div_or_other_archop() {
       switch (get_opcode()) {
         case MUL24_OP:
         case MAD24_OP:
+          counters_mask.set(INT_MUL32_CNTR);//<AliJahan> 
           sp_op = INT_MUL24_OP;
           break;
         case MUL_OP:
         case MAD_OP:
+          counters_mask.set(INT_MUL32_CNTR);//<AliJahan> 
           if (get_type() == U32_TYPE || get_type() == S32_TYPE ||
               get_type() == B32_TYPE)
             sp_op = INT_MUL32_OP;
@@ -640,9 +681,12 @@ void ptx_instruction::set_mul_div_or_other_archop() {
             sp_op = INT_MUL_OP;
           break;
         case DIV_OP:
+          //counters_mask.set(?);//<AliJahan> TODO
           sp_op = INT_DIV_OP;
           break;
         default:
+          counters_mask.set(SP_CNTR);   //<AliJahan> all integers are SP and ALU 
+          counters_mask.set(ALU_CNTR);  //<AliJahan>
           if ((op == ALU_OP)) sp_op = INT__OP;
           break;
       }

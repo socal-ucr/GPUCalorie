@@ -1648,6 +1648,15 @@ struct shader_core_stats_pod {
   unsigned *m_active_fu_lanes;
   unsigned *m_active_fu_mem_lanes;
   unsigned *m_n_diverge;  // number of divergence occurring in this shader
+  //<AliJahan/> 
+  unsigned *m_alu_cntr; 
+  unsigned *m_fp_cntr;
+  unsigned *m_sp_cntr;
+  unsigned *m_dp_cntr;
+  unsigned *m_imul32_cntr;
+  unsigned *m_sfu_cntr;
+  unsigned *m_rf_cntr; 
+  //</AliJahan>
   unsigned gpgpu_n_load_insn;
   unsigned gpgpu_n_store_insn;
   unsigned gpgpu_n_shmem_insn;
@@ -1781,6 +1790,23 @@ class shader_core_stats : public shader_core_stats_pod {
         (unsigned *)calloc(config->gpgpu_num_sched_per_core, sizeof(unsigned));
     dual_issue_nums =
         (unsigned *)calloc(config->gpgpu_num_sched_per_core, sizeof(unsigned));
+
+    //<AliJahan/>
+    m_alu_cntr = 
+        (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
+    m_fp_cntr = 
+        (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
+    m_sp_cntr = 
+        (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
+    m_dp_cntr = 
+        (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
+    m_imul32_cntr = 
+        (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
+    m_sfu_cntr = 
+        (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
+    m_rf_cntr = 
+        (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
+    //</AliJahan>
 
     n_simt_to_mem = (long *)calloc(config->num_shader(), sizeof(long));
     n_mem_to_simt = (long *)calloc(config->num_shader(), sizeof(long));
@@ -1953,6 +1979,41 @@ class shader_core_ctx : public core_t {
   // debug:
   void display_simt_state(FILE *fout, int mask) const;
   void display_pipeline(FILE *fout, int print_mem, int mask3bit) const;
+  //<AliJahan/>
+  void update_shader_stat(unsigned cntr_idx, unsigned active_count){
+    switch (cntr_idx){
+      case ALU_CNTR:
+        m_stats->m_alu_cntr[m_sid]=m_stats->m_alu_cntr[m_sid]+1;//+active_count;
+        break;
+      case SP_CNTR:
+        m_stats->m_sp_cntr[m_sid]=m_stats->m_sp_cntr[m_sid]+1;//+active_count;
+        break;
+      case FP_CNTR:
+        m_stats->m_fp_cntr[m_sid]=m_stats->m_fp_cntr[m_sid]+1;//+active_count;
+        break;
+      case DP_CNTR:
+        m_stats->m_dp_cntr[m_sid]=m_stats->m_dp_cntr[m_sid]+1;//+active_count;
+        break;
+      case SFU_CNTR:
+        m_stats->m_sfu_cntr[m_sid]=m_stats->m_sfu_cntr[m_sid]+1;//+active_count;
+        break;
+      case RF_RD_CNTR:
+        m_stats->m_rf_cntr[m_sid]=m_stats->m_rf_cntr[m_sid]+1;//+active_count;
+        break;
+      case RF_WR_CNTR:
+        m_stats->m_rf_cntr[m_sid]=m_stats->m_rf_cntr[m_sid]+1;//+active_count;
+        break;
+      case INT_MUL32_CNTR:
+        m_stats->m_imul32_cntr[m_sid]=m_stats->m_imul32_cntr[m_sid]+1;//+active_count;
+        break;
+      default:
+        printf("shader.h:%d counter with index %d is not supported\n",__LINE__, cntr_idx);
+        fflush(stdout);
+        abort();
+        break;
+    }
+  }
+//</AliJahan>
 
   void incload_stat() { m_stats->m_num_loadqueued_insn[m_sid]++; }
   void incstore_stat() { m_stats->m_num_storequeued_insn[m_sid]++; }

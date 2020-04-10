@@ -143,28 +143,25 @@ void ptx_stats::ptx_file_line_stats_write_file() {
 
   // fprintf(pfile,"kernel line : count latency dram_traffic smem_bk_conflicts smem_warp gmem_access_generated gmem_warp exposed_latency warp_divergence\n");//<AliJahan> original
   fprintf(pfile,"T_DECODE, T_ALU, T_FP, T_INT_MUL, T_FP_MUL, T_TRANS, T_INT_DIV, T_FP_DIV, T_SP, T_SFU, T_DP, NB_RF_RD, NB_RF_WR, T_INT_MUL24, T_INT_MUL32, SP_ACC, SFU_ACC, FPU_ACC,\n");//<AliJahan>
-  for( it=ptx_file_line_stats_tracker.begin(); it != ptx_file_line_stats_tracker.end(); it++ ) {
-    // fprintf(pfile, "%s %i : ", it->first.st.c_str(), it->first.line);
-    //fprintf(pfile, "%i, ", it->first.line);//<AliJahan>
-    //fprintf(pfile, "%lu, ", it->second.exec_count);//<AliJahan>
-    // fprintf(pfile, "%llu ", it->second.latency); //<AliJahan> original
-    // fprintf(pfile, "%llu ", it->second.dram_traffic); //<AliJahan> original
-    // fprintf(pfile, "%llu ", it->second.smem_n_way_bank_conflict_total); //<AliJahan> original
-    // fprintf(pfile, "%lu ", it->second.smem_warp_count); //<AliJahan> original
-    // fprintf(pfile, "%llu ", it->second.gmem_n_access_total); //<AliJahan> original
-    // fprintf(pfile, "%lu ", it->second.gmem_warp_count); //<AliJahan> original
-    // fprintf(pfile, "%llu ", it->second.exposed_latency); //<AliJahan> original
-    // fprintf(pfile, "%llu ", it->second.warp_divergence);
+  for( it=ptx_file_line_stats_tracker.begin(); it != ptx_file_line_stats_tracker.end(); it++ ) {        //fprintf(pfile, "%s %i : ", it->first.st.c_str(), it->first.line);
+    fprintf(pfile, "%i, ", it->first.line);//<AliJahan>
     //<AliJahan/>
-    for(int i=0; i<25; i++){
-      if( i==4 || i==9 || (i>=13 && i<=19) || i==22)
-        continue;
-      fprintf(pfile, "%llu, ", it->second.pi_stats[i]);
-    }
-    fprintf(pfile, "%llu, ", it->second.pi_stats[1]);
-    fprintf(pfile, "%llu, ", (it->second.pi_stats[7]+it->second.pi_stats[24]+it->second.pi_stats[13]+it->second.pi_stats[14]+it->second.pi_stats[15]+it->second.pi_stats[16]));
-    fprintf(pfile, "%llu, ", (it->second.pi_stats[2]+it->second.pi_stats[8]+it->second.pi_stats[5]+it->second.pi_stats[23]+it->second.pi_stats[3]));
-    //</AliJahan>
+    //1 for(int i=0; i<NEEDED_CNTR_SIZE; i++){
+    //1     fprintf(pfile, "%llu, ", it->second.pi_stats[i]);
+    //1 }
+    ///</AliJahan>
+    printf(pfile, "%llu, ", it->second.pi_stats[ALU_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[FP_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[SP_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[DP_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[INT_MUL32_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[SFU_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[SIN_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[LG_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[EXP_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[RCP_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[SQRT_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[RF_RD_CNTR]+it->second.pi_stats[RF_WR_CNTR]);        
     fprintf(pfile, "\n");
   }
   fflush(pfile);
@@ -179,7 +176,7 @@ void ptx_file_line_stats_add_exec_count(const ptx_instruction *pInsn) {
       .exec_count += 1;
 }
 //<AliJahan/>
-void update_instr_stats(unsigned pc, enum instr_stats_t stat, int val){
+void update_instr_stats(unsigned pc, enum counters_t stat, int val){
     const ptx_instruction *pInsn = function_info::pc_to_instruction(pc);
     ptx_file_line_stats_tracker[ptx_file_line(pInsn->source_file(), pInsn->source_line())].pi_stats[stat] += 1;
     // printf("stat #: %d  val:%llu set:%d\n", stat, ptx_file_line_stats_tracker[ptx_file_line(pInsn->source_file(), pInsn->source_line())].pi_stats[stat], val);

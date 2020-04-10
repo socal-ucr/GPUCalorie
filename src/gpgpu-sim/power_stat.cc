@@ -196,6 +196,22 @@ void power_core_stat_t::print(FILE *fout) {
             m_write_regfile_acesses[CURRENT_STAT_IDX][i]);
     fprintf(fout, "\tTotal NON REG=%u\n",
             m_non_rf_operands[CURRENT_STAT_IDX][i]);
+    //<AliJahan/>
+    fprintf(fout,"\t@Total ALU accesses=%u\n",
+            m_alu_cntr[CURRENT_STAT_IDX][i]);
+    fprintf(fout,"\t@Total FP accesses=%u\n",
+            m_fp_cntr[CURRENT_STAT_IDX][i]);
+    fprintf(fout,"\t@Total SP accesses=%u\n",
+            m_sp_cntr[CURRENT_STAT_IDX][i]);
+    fprintf(fout,"\t@Total DP accesses=%u\n",
+            m_dp_cntr[CURRENT_STAT_IDX][i]);
+    fprintf(fout,"\t@Total iMul accesses=%u\n",
+            m_imul32_cntr[CURRENT_STAT_IDX][i]);
+    fprintf(fout,"\t@Total SFU accesses=%u\n",
+            m_sfu_cntr[CURRENT_STAT_IDX][i]);
+    fprintf(fout,"\t@Total RF accesses=%u\n",
+            m_rf_cntr[CURRENT_STAT_IDX][i]);
+    //<AliJahan/>
   }
 }
 void power_core_stat_t::init() {
@@ -230,6 +246,16 @@ void power_core_stat_t::init() {
   m_active_sfu_lanes[CURRENT_STAT_IDX] = m_core_stats->m_active_sfu_lanes;
   m_num_tex_inst[CURRENT_STAT_IDX] = m_core_stats->m_num_tex_inst;
 
+  //<AliJahan/>
+  m_alu_cntr[CURRENT_STAT_IDX]=m_core_stats->m_alu_cntr;
+  m_fp_cntr[CURRENT_STAT_IDX]=m_core_stats->m_fp_cntr;
+  m_sp_cntr[CURRENT_STAT_IDX]=m_core_stats->m_sp_cntr;
+  m_dp_cntr[CURRENT_STAT_IDX]=m_core_stats->m_dp_cntr;
+  m_imul32_cntr[CURRENT_STAT_IDX]=m_core_stats->m_imul32_cntr;
+  m_sfu_cntr[CURRENT_STAT_IDX]=m_core_stats->m_sfu_cntr;
+  m_rf_cntr[CURRENT_STAT_IDX]=m_core_stats->m_rf_cntr;
+
+  //</AliJahan>
   m_pipeline_duty_cycle[PREV_STAT_IDX] =
       (float *)calloc(m_config->num_shader(), sizeof(float));
   m_num_decoded_insn[PREV_STAT_IDX] =
@@ -284,6 +310,23 @@ void power_core_stat_t::init() {
       (unsigned *)calloc(m_config->num_shader(), sizeof(unsigned));
   m_active_sfu_lanes[PREV_STAT_IDX] =
       (unsigned *)calloc(m_config->num_shader(), sizeof(unsigned));
+
+  //<AliJahan/>
+  m_alu_cntr[PREV_STAT_IDX] =
+      (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
+  m_fp_cntr[PREV_STAT_IDX] =
+      (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
+  m_sp_cntr[PREV_STAT_IDX] =
+      (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
+  m_dp_cntr[PREV_STAT_IDX] =
+      (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
+  m_imul32_cntr[PREV_STAT_IDX] =
+      (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
+  m_sfu_cntr[PREV_STAT_IDX] =
+      (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
+  m_rf_cntr[PREV_STAT_IDX] =
+      (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
+  //</AliJahan>
 }
 
 void power_core_stat_t::save_stats() {
@@ -339,6 +382,22 @@ void power_core_stat_t::save_stats() {
         m_active_sp_lanes[CURRENT_STAT_IDX][i];
     m_active_sfu_lanes[PREV_STAT_IDX][i] =
         m_active_sfu_lanes[CURRENT_STAT_IDX][i];
+    //<AliJahan/> 
+    m_alu_cntr[PREV_STAT_IDX][i] =
+        m_alu_cntr[CURRENT_STAT_IDX][i];
+    m_fp_cntr[PREV_STAT_IDX][i] =
+        m_fp_cntr[CURRENT_STAT_IDX][i];
+    m_sp_cntr[PREV_STAT_IDX][i] =
+        m_sp_cntr[CURRENT_STAT_IDX][i];
+    m_dp_cntr[PREV_STAT_IDX][i] =
+        m_dp_cntr[CURRENT_STAT_IDX][i];
+    m_imul32_cntr[PREV_STAT_IDX][i] =
+        m_imul32_cntr[CURRENT_STAT_IDX][i];
+    m_sfu_cntr[PREV_STAT_IDX][i] =
+        m_sfu_cntr[CURRENT_STAT_IDX][i];
+    m_rf_cntr[PREV_STAT_IDX][i] =
+        m_rf_cntr[CURRENT_STAT_IDX][i];
+    //</AliJahan>
   }
 }
 

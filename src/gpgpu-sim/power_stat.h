@@ -74,6 +74,15 @@ struct shader_core_power_stats_pod {
   unsigned *m_read_regfile_acesses[NUM_STAT_IDX];
   unsigned *m_write_regfile_acesses[NUM_STAT_IDX];
   unsigned *m_non_rf_operands[NUM_STAT_IDX];
+  //<AliJahan/> 
+  unsigned *m_alu_cntr[NUM_STAT_IDX]; 
+  unsigned *m_fp_cntr[NUM_STAT_IDX];
+  unsigned *m_sp_cntr[NUM_STAT_IDX];
+  unsigned *m_dp_cntr[NUM_STAT_IDX];
+  unsigned *m_imul32_cntr[NUM_STAT_IDX];
+  unsigned *m_sfu_cntr[NUM_STAT_IDX];
+  unsigned *m_rf_cntr[NUM_STAT_IDX]; 
+//</AliJahan>
 };
 
 class power_core_stat_t : public shader_core_power_stats_pod {
@@ -144,6 +153,37 @@ class power_stat_t {
     *m_average_pipeline_duty_cycle = 0;
     *m_active_sms = 0;
   }
+
+  //<AliJahan/>
+  unsigned get_tot_alu_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_alu_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_alu_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_fp_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_fp_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_fp_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_sp_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_sp_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_sp_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_dp_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_dp_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_dp_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_imul32_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_imul32_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_imul32_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_sfu_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_sfu_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_sfu_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_rf_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_rf_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_rf_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  //</AliJahan>
 
   unsigned get_total_inst() {
     unsigned total_inst = 0;

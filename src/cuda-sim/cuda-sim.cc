@@ -611,11 +611,11 @@ void ptx_instruction::set_mul_div_or_other_archop() {
       switch (get_opcode()) {
         case MUL_OP:
         case MAD_OP:
-          //counters_mask.set(FP_CNTR);//<AliJahan> TODO
+          //  counters_mask.set(FP_CNTR);  //<AliJahan> <Daniel: FP Mul goes to FMA which is SP and FP / DP>
           sp_op = FP_MUL_OP;
           break;
         case DIV_OP:
-          counters_mask.set(SFU_CNTR);//<AliJahan> <from Daniel>
+          counters_mask.set(SFU_CNTR);    //<AliJahan> <Daniel: FP Div is SFU>
           sp_op = FP_DIV_OP;
           break;
         case LG2_OP:
@@ -681,7 +681,7 @@ void ptx_instruction::set_mul_div_or_other_archop() {
             sp_op = INT_MUL_OP;
           break;
         case DIV_OP:
-          //counters_mask.set(?);//<AliJahan> TODO
+          counters_mask.set(INT_MUL32_CNTR);//<AliJahan> <Daniel>
           sp_op = INT_DIV_OP;
           break;
         default:

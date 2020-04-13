@@ -1982,28 +1982,32 @@ class shader_core_ctx : public core_t {
   //<AliJahan/>
   void update_shader_stat(unsigned cntr_idx, unsigned active_count){
     switch (cntr_idx){
-      case ALU_CNTR:
+      case ALU_CNTR: //0
         m_stats->m_alu_cntr[m_sid]=m_stats->m_alu_cntr[m_sid]+1;//+active_count;
         break;
-      case SP_CNTR:
+      case SP_CNTR: //2
         m_stats->m_sp_cntr[m_sid]=m_stats->m_sp_cntr[m_sid]+1;//+active_count;
         break;
-      case FP_CNTR:
+      case FP_CNTR: //1
         m_stats->m_fp_cntr[m_sid]=m_stats->m_fp_cntr[m_sid]+1;//+active_count;
         break;
-      case DP_CNTR:
+      case DP_CNTR: //3
         m_stats->m_dp_cntr[m_sid]=m_stats->m_dp_cntr[m_sid]+1;//+active_count;
         break;
-      case SFU_CNTR:
+      case LG_CNTR: //6
+      case EXP_CNTR: //7
+      case RCP_CNTR: //8
+      case SQRT_CNTR: //9
+      case SFU_CNTR: //12
         m_stats->m_sfu_cntr[m_sid]=m_stats->m_sfu_cntr[m_sid]+1;//+active_count;
         break;
-      case RF_RD_CNTR:
+      case RF_RD_CNTR: //10
         m_stats->m_rf_cntr[m_sid]=m_stats->m_rf_cntr[m_sid]+1;//+active_count;
         break;
-      case RF_WR_CNTR:
+      case RF_WR_CNTR: //11
         m_stats->m_rf_cntr[m_sid]=m_stats->m_rf_cntr[m_sid]+1;//+active_count;
         break;
-      case INT_MUL32_CNTR:
+      case INT_MUL32_CNTR: //4
         m_stats->m_imul32_cntr[m_sid]=m_stats->m_imul32_cntr[m_sid]+1;//+active_count;
         break;
       default:
@@ -2395,6 +2399,7 @@ class simt_core_cluster {
                          unsigned &dl1_misses) const;
 
   void get_cache_stats(cache_stats &cs) const;
+  void get_cache_stats(unsigned shader, cache_stats &cs) const;
   void get_L1I_sub_stats(struct cache_sub_stats &css) const;
   void get_L1D_sub_stats(struct cache_sub_stats &css) const;
   void get_L1C_sub_stats(struct cache_sub_stats &css) const;

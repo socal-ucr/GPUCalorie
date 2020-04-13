@@ -4442,6 +4442,9 @@ void simt_core_cluster::get_icnt_stats(long &n_simt_to_mem,
   }
   n_simt_to_mem = simt_to_mem;
   n_mem_to_simt = mem_to_simt;
+
+void simt_core_cluster::get_cache_stats(unsigned shader, cache_stats &cs) const{
+  m_core[shader]->get_cache_stats(cs);
 }
 
 void simt_core_cluster::get_cache_stats(cache_stats &cs) const {

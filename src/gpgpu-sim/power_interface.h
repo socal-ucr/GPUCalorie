@@ -32,18 +32,34 @@
 #include "gpu-sim.h"
 #include "power_stat.h"
 #include "shader.h"
+#include <iostream>
+#include <fstream>
+#include <zlib.h>
+#include <string.h>
 
-#include "gpgpu_sim_wrapper.h"
+class power_interface {
+    public:
+    power_interface(const gpgpu_sim_config &config,const int stat_sample_freq);
+    void cycle(const gpgpu_sim_config &config, const struct shader_core_config *shdr_config,
+               class power_stat_t *power_stats, unsigned stat_sample_freq, unsigned tot_cycle,
+               unsigned cycle, unsigned tot_inst, unsigned inst);
+    private:
 
-void init_mcpat(const gpgpu_sim_config &config,
-                class gpgpu_sim_wrapper *wrapper, unsigned stat_sample_freq,
-                unsigned tot_inst, unsigned inst);
-void mcpat_cycle(const gpgpu_sim_config &config,
-                 const shader_core_config *shdr_config,
-                 class gpgpu_sim_wrapper *wrapper,
-                 class power_stat_t *power_stats, unsigned stat_sample_freq,
-                 unsigned tot_cycle, unsigned cycle, unsigned tot_inst,
-                 unsigned inst);
-void mcpat_reset_perf_count(class gpgpu_sim_wrapper *wrapper);
+    void open_files();
+    void close_files();
 
+    char *g_power_trace_filename;
+    char *g_metric_trace_filename;
+    bool g_power_simulation_enabled;
+    bool g_power_trace_enabled;
+    int g_power_trace_zlevel;
+    unsigned gpu_stat_sample_freq;
+    int num_shaders;
+
+    gzFile power_trace_file;
+    gzFile metric_trace_file;
+    gzFile steady_state_tacking_file;
+
+
+};
 #endif /* POWER_INTERFACE_H_ */

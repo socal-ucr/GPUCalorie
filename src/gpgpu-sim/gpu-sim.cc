@@ -66,11 +66,7 @@
 #include "stats.h"
 #include "visualizer.h"
 
-#ifdef GPGPUSIM_POWER_MODEL
 #include "power_interface.h"
-#else
-class gpgpu_sim_wrapper {};
-#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -825,8 +821,7 @@ gpgpu_sim::gpgpu_sim(const gpgpu_sim_config &config, gpgpu_context *ctx)
   ptx_file_line_stats_create_exposed_latency_tracker(m_config.num_shader());
 
 #ifdef GPGPUSIM_POWER_MODEL
-  m_gpgpusim_wrapper = new gpgpu_sim_wrapper(config.g_power_simulation_enabled,
-                                             config.g_power_config_name);
+    m_power_interface = new power_interface(m_config,m_config.gpu_stat_sample_freq);
 #endif
 
   m_shader_stats = new shader_core_stats(m_shader_config);
@@ -1027,13 +1022,6 @@ void gpgpu_sim::init() {
 
   if (g_network_mode) icnt_init();
 
-    // McPAT initialization function. Called on first launch of GPU
-#ifdef GPGPUSIM_POWER_MODEL
-  if (m_config.g_power_simulation_enabled) {
-    init_mcpat(m_config, m_gpgpusim_wrapper, m_config.gpu_stat_sample_freq,
-               gpu_tot_sim_insn, gpu_sim_insn);
-  }
-#endif
 }
 
 void gpgpu_sim::update_stats() {
@@ -1323,13 +1311,8 @@ void gpgpu_sim::gpu_print_stat() {
 
   m_shader_stats->print(stdout);
 #ifdef GPGPUSIM_POWER_MODEL
-  if (m_config.g_power_simulation_enabled) {
-    // m_gpgpusim_wrapper->print_accumulative_stats();//<AliJahan>
-    m_gpgpusim_wrapper->print_power_kernel_stats(
-        gpu_sim_cycle, gpu_tot_sim_cycle, gpu_tot_sim_insn + gpu_sim_insn,
-        kernel_info_str, true);
-    mcpat_reset_perf_count(m_gpgpusim_wrapper);
-  }
+   if(m_config.g_power_simulation_enabled){
+   }
 #endif
 
   // performance counter that are not local to one shader
@@ -1390,13 +1373,6 @@ void gpgpu_sim::gpu_print_stat() {
     StatDisp(gpgpu_ctx->func_sim->g_inst_op_classification_stat
                  [gpgpu_ctx->func_sim->g_ptx_kernel_count]);
   }
-
-#ifdef GPGPUSIM_POWER_MODEL
-  if (m_config.g_power_simulation_enabled) {
-    m_gpgpusim_wrapper->detect_print_steady_state(
-        1, gpu_tot_sim_insn + gpu_sim_insn);
-  }
-#endif
 
   // Interconnect power stat print
   long total_simt_to_mem = 0;
@@ -1462,8 +1438,8 @@ void shader_core_ctx::mem_instruction_stats(const warp_inst_t &inst) {
       }
       break;
     default:
-      abort();
-  }
+      break;
+    }
 }
 bool shader_core_ctx::can_issue_1block(kernel_info_t &kernel) {
   // Jin: concurrent kernels on one SM
@@ -1840,7 +1816,9 @@ void gpgpu_sim::cycle() {
 
   if (clock_mask & CORE) {
     // L1 cache + shader core pipeline stages
-    m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
+    for (unsigned i=0;i<m_shader_config->num_shader();i++)
+      m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][i].clear();
+
     for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++) {
       if (m_cluster[i]->get_not_completed() || get_more_cta_left()) {
         m_cluster[i]->core_cycle();
@@ -1850,8 +1828,11 @@ void gpgpu_sim::cycle() {
       m_cluster[i]->get_icnt_stats(
           m_power_stats->pwr_mem_stat->n_simt_to_mem[CURRENT_STAT_IDX][i],
           m_power_stats->pwr_mem_stat->n_mem_to_simt[CURRENT_STAT_IDX][i]);
-      m_cluster[i]->get_cache_stats(
-          m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX]);
+      for (unsigned shader = 0;shader< m_shader_config->n_simt_cores_per_cluster;shader++) {
+          unsigned smid = (i*m_shader_config->n_simt_cores_per_cluster) + shader;
+          m_cluster[i]->get_cache_stats(shader,
+            m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][smid]);
+      }
       m_cluster[i]->get_current_occupancy(
           gpu_occupancy.aggregate_warp_slot_filled,
           gpu_occupancy.aggregate_theoretical_warp_slots);
@@ -1873,14 +1854,13 @@ void gpgpu_sim::cycle() {
 
     if (g_interactive_debugger_enabled) gpgpu_debug();
 
-      // McPAT main cycle (interface with McPAT)
 #ifdef GPGPUSIM_POWER_MODEL
-    if (m_config.g_power_simulation_enabled) {
-      mcpat_cycle(m_config, getShaderCoreConfig(), m_gpgpusim_wrapper,
-                  m_power_stats, m_config.gpu_stat_sample_freq,
-                  gpu_tot_sim_cycle, gpu_sim_cycle, gpu_tot_sim_insn,
-                  gpu_sim_insn);
-    }
+    if(m_config.g_power_simulation_enabled){
+        m_power_interface->cycle(m_config, getShaderCoreConfig(),
+                                 m_power_stats, m_config.gpu_stat_sample_freq,
+                                 gpu_tot_sim_cycle, gpu_sim_cycle,
+                                 gpu_tot_sim_insn, gpu_sim_insn);
+      }
 #endif
 
     issue_block2core();

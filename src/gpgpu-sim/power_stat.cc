@@ -61,7 +61,10 @@ void power_mem_stat_t::init() {
       (unsigned *)calloc(m_core_config->num_shader(), sizeof(unsigned));
 
   for (unsigned i = 0; i < NUM_STAT_IDX; ++i) {
-    core_cache_stats[i].clear();
+    core_cache_stats[i] = new cache_stats[m_core_config->num_shader()];
+    for(unsigned shader = 0; shader < m_core_config->num_shader(); shader++)
+      core_cache_stats[i][shader].clear();
+
     l2_cache_stats[i].clear();
 
     n_cmd[i] = (unsigned *)calloc(m_config->m_n_mem, sizeof(unsigned));
@@ -88,6 +91,8 @@ void power_mem_stat_t::save_stats() {
   for (unsigned i = 0; i < m_core_config->num_shader(); ++i) {
     shmem_read_access[PREV_STAT_IDX][i] =
         shmem_read_access[CURRENT_STAT_IDX][i];  // Shared memory access
+    core_cache_stats[PREV_STAT_IDX][i] = 
+        core_cache_stats[CURRENT_STAT_IDX][i];
   }
 
   for (unsigned i = 0; i < m_config->m_n_mem; ++i) {
@@ -124,8 +129,10 @@ void power_mem_stat_t::print(FILE *fout) const {
   fprintf(fout, "Total memory controller reads: %u\n", total_mem_reads);
   fprintf(fout, "Total memory controller writes: %u\n", total_mem_writes);
 
-  fprintf(fout, "Core cache stats:\n");
-  core_cache_stats->print_stats(fout);
+  for(unsigned i=0; i<m_core_config->num_shader(); ++i){
+    fprintf(fout, "Core %u cache stats:\n",i);
+    core_cache_stats[0][i].print_stats(fout);
+  }
   fprintf(fout, "L2 cache stats:\n");
   l2_cache_stats->print_stats(fout);
 }

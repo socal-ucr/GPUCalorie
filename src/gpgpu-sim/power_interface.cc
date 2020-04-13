@@ -28,127 +28,120 @@
 
 #include "power_interface.h"
 
-void init_mcpat(const gpgpu_sim_config &config,
-                class gpgpu_sim_wrapper *wrapper, unsigned stat_sample_freq,
-                unsigned tot_inst, unsigned inst) {
-  wrapper->init_mcpat(
-      config.g_power_config_name, config.g_power_filename,
-      config.g_power_trace_filename, config.g_metric_trace_filename,
-      config.g_steady_state_tracking_filename,
-      config.g_power_simulation_enabled, config.g_power_trace_enabled,
-      config.g_steady_power_levels_enabled, config.g_power_per_cycle_dump,
-      config.gpu_steady_power_deviation, config.gpu_steady_min_period,
-      config.g_power_trace_zlevel, tot_inst + inst, stat_sample_freq);
+static const char * pwr_cmp_label[] = {"T_ALU","T_FP","T_DP","T_INT_MUL32","T_SFU","NB_RF","L1","SHD_MEM"};
+enum pwr_cmp_t {T_ALU,T_FP,T_DP,T_INT_MUL32,T_SFU,NB_RF,L1,SHD_MEM,NUM_POWER_COMPONENTS};
+
+
+power_interface::power_interface(const gpgpu_sim_config &config,const int stat_sample_freq)
+{
+
+    // Write File Headers for (-metrics trace, -power trace)
+
+    static bool init=true;
+
+    // initialize file name if it is not set
+    time_t curr_time;
+    time(&curr_time);
+    char *date = ctime(&curr_time);
+    char *s = date;
+    while (*s) {
+        if (*s == ' ' || *s == '\t' || *s == ':') *s = '-';
+        if (*s == '\n' || *s == '\r' ) *s = 0;
+        s++;
+    }
+
+   if(init){
+	g_power_trace_filename = config.g_power_trace_filename;
+	g_metric_trace_filename = config.g_metric_trace_filename;
+	g_power_simulation_enabled=config.g_power_simulation_enabled;
+	g_power_trace_enabled=config.g_power_trace_enabled;
+        g_power_trace_zlevel=config.g_power_trace_zlevel;
+        num_shaders = config.num_shader();
+
+	gpu_stat_sample_freq=stat_sample_freq;
+
+	if (g_power_trace_enabled ){
+            power_trace_file = gzopen(g_power_trace_filename, "w");
+	    metric_trace_file = gzopen(g_metric_trace_filename, "w");
+	    if ((power_trace_file == NULL) || (metric_trace_file == NULL)) {
+                printf("error - could not open trace files \n");
+		exit(1);
+	    }
+	    gzsetparams(power_trace_file, g_power_trace_zlevel, Z_DEFAULT_STRATEGY);
+
+	    gzsetparams(metric_trace_file, g_power_trace_zlevel, Z_DEFAULT_STRATEGY);
+	    for(unsigned i=0; i<config.num_shader(); i++){
+                std::string power_label = "SM"+std::to_string((long long int)i) + ",";
+                gzprintf(power_trace_file,power_label.c_str());
+
+	        for(unsigned i=0; i<NUM_POWER_COMPONENTS; i++){
+                    std::string comp_label = "SM"+std::to_string((long long int)i) +
+                                             "_" + pwr_cmp_label[i] + ",";
+                    gzprintf(metric_trace_file,comp_label.c_str());
+	        }
+	    }
+            gzprintf(power_trace_file,"L2,");
+            gzprintf(power_trace_file,"MC1,");
+            gzprintf(power_trace_file,"MC2,");
+            gzprintf(power_trace_file,"MC3");
+            gzprintf(power_trace_file,"\n");
+
+            gzprintf(metric_trace_file,"L2,");
+            gzprintf(metric_trace_file,"MEM");
+	    gzprintf(metric_trace_file,"\n");
+
+	    gzclose(power_trace_file);
+	    gzclose(metric_trace_file);
+	}
+        init = false;
+   }
 }
 
-void mcpat_cycle(const gpgpu_sim_config &config,
-                 const shader_core_config *shdr_config,
-                 class gpgpu_sim_wrapper *wrapper,
-                 class power_stat_t *power_stats, unsigned stat_sample_freq,
-                 unsigned tot_cycle, unsigned cycle, unsigned tot_inst,
-                 unsigned inst) {
-  static bool mcpat_init = true;
+void power_interface::cycle(const gpgpu_sim_config &config, const struct shader_core_config *shdr_config, class power_stat_t *power_stats, unsigned stat_sample_freq, unsigned tot_cycle, unsigned cycle, unsigned tot_inst, unsigned inst){
 
-  if (mcpat_init) {  // If first cycle, don't have any power numbers yet
-    mcpat_init = false;
-    return;
-  }
+	static bool init=true;
 
-  if ((tot_cycle + cycle) % stat_sample_freq == 0) {
-    wrapper->set_inst_power(
-        shdr_config->gpgpu_clock_gated_lanes, stat_sample_freq,
-        stat_sample_freq, power_stats->get_total_inst(),
-        power_stats->get_total_int_inst(), power_stats->get_total_fp_inst(),
-        power_stats->get_l1d_read_accesses(),
-        power_stats->get_l1d_write_accesses(),
-        power_stats->get_committed_inst());
+	if(init){ // If first cycle, don't have any power numbers yet
+	    init=false;
+	    return;
+	}
 
-    // Single RF for both int and fp ops
-    wrapper->set_regfile_power(power_stats->get_regfile_reads(),
-                               power_stats->get_regfile_writes(),
-                               power_stats->get_non_regfile_operands());
+	if ((tot_cycle+cycle) % gpu_stat_sample_freq == 0) {
+            open_files();
+            for(int SM = 0; SM < num_shaders;SM++){
+                //get component accesses
+                unsigned alu = power_stats->get_tot_alu_accessess(SM);
+                unsigned fp = power_stats->get_tot_fp_accessess(SM);
+                unsigned dp = power_stats->get_tot_dp_accessess(SM);
+                unsigned int_mul32 = power_stats->get_tot_imul32_accessess(SM);
+                unsigned sfu = power_stats->get_tot_sfu_accessess(SM);
+                unsigned nb_rf = power_stats->get_tot_rf_accessess(SM);
+                unsigned l1 = power_stats->get_l1d_hits(SM);
+                unsigned shd_mem = power_stats->get_shmem_read_access(SM);
+                
+		gzprintf(metric_trace_file,"%u,%u,%u,%u,%u,%u,%u,%u,",alu,fp,dp,int_mul32,sfu,nb_rf,l1,shd_mem);
 
-    // Instruction cache stats
-    wrapper->set_icache_power(power_stats->get_inst_c_hits(),
-                              power_stats->get_inst_c_misses());
+                //calculate epi
 
-    // Constant Cache, shared memory, texture cache
-    wrapper->set_ccache_power(power_stats->get_constant_c_hits(),
-                              power_stats->get_constant_c_misses());
-    wrapper->set_tcache_power(power_stats->get_texture_c_hits(),
-                              power_stats->get_texture_c_misses());
-    wrapper->set_shrd_mem_power(power_stats->get_shmem_read_access());
-
-    wrapper->set_l1cache_power(
-        power_stats->get_l1d_read_hits(), power_stats->get_l1d_read_misses(),
-        power_stats->get_l1d_write_hits(), power_stats->get_l1d_write_misses());
-
-    wrapper->set_l2cache_power(
-        power_stats->get_l2_read_hits(), power_stats->get_l2_read_misses(),
-        power_stats->get_l2_write_hits(), power_stats->get_l2_write_misses());
-
-    float active_sms = (*power_stats->m_active_sms) / stat_sample_freq;
-    float num_cores = shdr_config->num_shader();
-    float num_idle_core = num_cores - active_sms;
-    wrapper->set_idle_core_power(num_idle_core);
-
-    // pipeline power - pipeline_duty_cycle *= percent_active_sms;
-    float pipeline_duty_cycle =
-        ((*power_stats->m_average_pipeline_duty_cycle / (stat_sample_freq)) <
-         0.8)
-            ? ((*power_stats->m_average_pipeline_duty_cycle) / stat_sample_freq)
-            : 0.8;
-    wrapper->set_duty_cycle_power(pipeline_duty_cycle);
-
-    // Memory Controller
-    wrapper->set_mem_ctrl_power(power_stats->get_dram_rd(),
-                                power_stats->get_dram_wr(),
-                                power_stats->get_dram_pre());
-
-    // Execution pipeline accesses
-    // FPU (SP) accesses, Integer ALU (not present in Tesla), Sfu accesses
-    wrapper->set_exec_unit_power(power_stats->get_tot_fpu_accessess(),
-                                 power_stats->get_ialu_accessess(),
-                                 power_stats->get_tot_sfu_accessess());
-
-    // Average active lanes for sp and sfu pipelines
-    float avg_sp_active_lanes =
-        (power_stats->get_sp_active_lanes()) / stat_sample_freq;
-    float avg_sfu_active_lanes =
-        (power_stats->get_sfu_active_lanes()) / stat_sample_freq;
-    assert(avg_sp_active_lanes <= 32);
-    assert(avg_sfu_active_lanes <= 32);
-    wrapper->set_active_lanes_power(
-        (power_stats->get_sp_active_lanes()) / stat_sample_freq,
-        (power_stats->get_sfu_active_lanes()) / stat_sample_freq);
-
-    double n_icnt_simt_to_mem =
-        (double)
-            power_stats->get_icnt_simt_to_mem();  // # flits from SIMT clusters
-                                                  // to memory partitions
-    double n_icnt_mem_to_simt =
-        (double)
-            power_stats->get_icnt_mem_to_simt();  // # flits from memory
-                                                  // partitions to SIMT clusters
-    wrapper->set_NoC_power(
-        n_icnt_mem_to_simt,
-        n_icnt_simt_to_mem);  // Number of flits traversing the interconnect
-
-    wrapper->compute();
-
-    wrapper->update_components_power();
-    wrapper->print_trace_files();
-    power_stats->save_stats();
-
-    wrapper->detect_print_steady_state(0, tot_inst + inst);
-
-    wrapper->power_metrics_calculations();
-
-    wrapper->dump();
-  }
-  // wrapper->close_files();
+            }
+            unsigned l2 = power_stats->get_l2_read_hits() + power_stats->get_l2_write_hits();
+            unsigned dram = power_stats->get_dram_req();
+            gzprintf(metric_trace_file,"%u,%u\n",l2,dram);
+	    power_stats->save_stats();
+            close_files();
+	}
 }
-
-void mcpat_reset_perf_count(class gpgpu_sim_wrapper *wrapper) {
-  wrapper->reset_counters();
+void power_interface::open_files()
+{
+    if(g_power_simulation_enabled){
+            power_trace_file = gzopen(g_power_trace_filename,  "a");
+            metric_trace_file = gzopen(g_metric_trace_filename, "a");
+    }
+}
+void power_interface::close_files()
+{
+    if(g_power_simulation_enabled){
+  		  gzclose(power_trace_file);
+  		  gzclose(metric_trace_file);
+  	 }
 }

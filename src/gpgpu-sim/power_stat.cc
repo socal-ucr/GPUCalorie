@@ -208,6 +208,8 @@ void power_core_stat_t::print(FILE *fout) {
             m_alu_cntr[CURRENT_STAT_IDX][i]);
     fprintf(fout,"\t@Total FP accesses=%u\n",
             m_fp_cntr[CURRENT_STAT_IDX][i]);
+    fprintf(fout,"\t@Total Decoded instructions=%u\n",
+            m_decode_cntr[CURRENT_STAT_IDX][i]);
     fprintf(fout,"\t@Total SP accesses=%u\n",
             m_sp_cntr[CURRENT_STAT_IDX][i]);
     fprintf(fout,"\t@Total DP accesses=%u\n",
@@ -255,6 +257,7 @@ void power_core_stat_t::init() {
 
   //<AliJahan/>
   m_alu_cntr[CURRENT_STAT_IDX]=m_core_stats->m_alu_cntr;
+  m_decode_cntr[CURRENT_STAT_IDX]=m_core_stats->m_decode_cntr;
   m_fp_cntr[CURRENT_STAT_IDX]=m_core_stats->m_fp_cntr;
   m_sp_cntr[CURRENT_STAT_IDX]=m_core_stats->m_sp_cntr;
   m_dp_cntr[CURRENT_STAT_IDX]=m_core_stats->m_dp_cntr;
@@ -320,6 +323,8 @@ void power_core_stat_t::init() {
 
   //<AliJahan/>
   m_alu_cntr[PREV_STAT_IDX] =
+      (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
+  m_decode_cntr[PREV_STAT_IDX] =
       (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
   m_fp_cntr[PREV_STAT_IDX] =
       (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
@@ -392,6 +397,8 @@ void power_core_stat_t::save_stats() {
     //<AliJahan/> 
     m_alu_cntr[PREV_STAT_IDX][i] =
         m_alu_cntr[CURRENT_STAT_IDX][i];
+    m_decode_cntr[PREV_STAT_IDX][i] =
+        m_decode_cntr[CURRENT_STAT_IDX][i];
     m_fp_cntr[PREV_STAT_IDX][i] =
         m_fp_cntr[CURRENT_STAT_IDX][i];
     m_sp_cntr[PREV_STAT_IDX][i] =

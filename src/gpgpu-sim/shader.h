@@ -1650,6 +1650,7 @@ struct shader_core_stats_pod {
   unsigned *m_n_diverge;  // number of divergence occurring in this shader
   //<AliJahan/> 
   unsigned *m_alu_cntr; 
+  unsigned *m_decode_cntr; 
   unsigned *m_fp_cntr;
   unsigned *m_sp_cntr;
   unsigned *m_dp_cntr;
@@ -1793,6 +1794,8 @@ class shader_core_stats : public shader_core_stats_pod {
 
     //<AliJahan/>
     m_alu_cntr = 
+        (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
+    m_decode_cntr = 
         (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
     m_fp_cntr = 
         (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
@@ -2009,6 +2012,9 @@ class shader_core_ctx : public core_t {
         break;
       case INT_MUL32_CNTR: //4
         m_stats->m_imul32_cntr[m_sid]=m_stats->m_imul32_cntr[m_sid]+1;//+active_count;
+        break;
+      case DECODE_CNTR: //13
+        m_stats->m_decode_cntr[m_sid]=m_stats->m_decode_cntr[m_sid]+1;//+active_count;
         break;
       default:
         printf("shader.h:%d counter with index %d is not supported\n",__LINE__, cntr_idx);

@@ -856,7 +856,8 @@ void shader_core_ctx::decode() {
     m_warp[m_inst_fetch_buffer.m_warp_id]->ibuffer_fill(0, pI1);
     m_warp[m_inst_fetch_buffer.m_warp_id]->inc_inst_in_pipeline();
     if (pI1) {
-      //update_instr_stats(pI1->pc, T_DECODE, 1);//<AliJahan stats>
+      update_instr_stats(pI1->pc, DECODE_CNTR, 1);//<AliJahan stats>
+      update_shader_stat(DECODE_CNTR, 1);//<AliJahan stats>
       m_stats->m_num_decoded_insn[m_sid]++;
       if (pI1->oprnd_type == INT_OP) {
         m_stats->m_num_INTdecoded_insn[m_sid]++;
@@ -866,7 +867,8 @@ void shader_core_ctx::decode() {
       const warp_inst_t *pI2 =
           get_next_inst(m_inst_fetch_buffer.m_warp_id, pc + pI1->isize);
       if (pI2) {
-        //update_instr_stats(pI2->pc, T_DECODE, 1);//<AliJahan stats>
+        update_instr_stats(pI2->pc, DECODE_CNTR, 1);//<AliJahan stats>
+        update_shader_stat(DECODE_CNTR, 1);//<AliJahan stats>
         m_warp[m_inst_fetch_buffer.m_warp_id]->ibuffer_fill(1, pI2);
         m_warp[m_inst_fetch_buffer.m_warp_id]->inc_inst_in_pipeline();
         m_stats->m_num_decoded_insn[m_sid]++;

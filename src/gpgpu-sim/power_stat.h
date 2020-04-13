@@ -76,6 +76,7 @@ struct shader_core_power_stats_pod {
   unsigned *m_non_rf_operands[NUM_STAT_IDX];
   //<AliJahan/> 
   unsigned *m_alu_cntr[NUM_STAT_IDX]; 
+  unsigned *m_decode_cntr[NUM_STAT_IDX]; 
   unsigned *m_fp_cntr[NUM_STAT_IDX];
   unsigned *m_sp_cntr[NUM_STAT_IDX];
   unsigned *m_dp_cntr[NUM_STAT_IDX];
@@ -158,6 +159,10 @@ class power_stat_t {
   unsigned get_tot_alu_accessess(unsigned shader_id){
     assert(shader_id<m_config->num_shader());
     return (pwr_core_stat->m_alu_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_alu_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_decode_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_decode_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_decode_cntr[PREV_STAT_IDX][shader_id]);
   }
   unsigned get_tot_fp_accessess(unsigned shader_id){
     assert(shader_id<m_config->num_shader());

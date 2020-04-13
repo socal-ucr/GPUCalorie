@@ -142,15 +142,16 @@ void ptx_stats::ptx_file_line_stats_write_file() {
   pfile = fopen(ptx_line_stats_filename, "w");
 
   // fprintf(pfile,"kernel line : count latency dram_traffic smem_bk_conflicts smem_warp gmem_access_generated gmem_warp exposed_latency warp_divergence\n");//<AliJahan> original
-  fprintf(pfile,"T_DECODE, T_ALU, T_FP, T_INT_MUL, T_FP_MUL, T_TRANS, T_INT_DIV, T_FP_DIV, T_SP, T_SFU, T_DP, NB_RF_RD, NB_RF_WR, T_INT_MUL24, T_INT_MUL32, SP_ACC, SFU_ACC, FPU_ACC,\n");//<AliJahan>
-  for( it=ptx_file_line_stats_tracker.begin(); it != ptx_file_line_stats_tracker.end(); it++ ) {        //fprintf(pfile, "%s %i : ", it->first.st.c_str(), it->first.line);
+  fprintf(pfile,"LINE#, T_DECODE, T_ALU, T_FP, T_SP, T_DP, INT_MUL32, T_SFU, T_SIN, T_LG, T_EXP, T_RCP, T_SQRT, NB_RF,\n");//<AliJahan>
+  for( it=ptx_file_line_stats_tracker.begin(); it != ptx_file_line_stats_tracker.end(); it++ ) {
     fprintf(pfile, "%i, ", it->first.line);//<AliJahan>
     //<AliJahan/>
     //1 for(int i=0; i<NEEDED_CNTR_SIZE; i++){
     //1     fprintf(pfile, "%llu, ", it->second.pi_stats[i]);
     //1 }
     ///</AliJahan>
-    printf(pfile, "%llu, ", it->second.pi_stats[ALU_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[DECODE_CNTR]);
+    fprintf(pfile, "%llu, ", it->second.pi_stats[ALU_CNTR]);
     fprintf(pfile, "%llu, ", it->second.pi_stats[FP_CNTR]);
     fprintf(pfile, "%llu, ", it->second.pi_stats[SP_CNTR]);
     fprintf(pfile, "%llu, ", it->second.pi_stats[DP_CNTR]);

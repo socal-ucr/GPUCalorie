@@ -83,6 +83,7 @@ enum counters_t {
    RF_RD_CNTR,         //
    RF_WR_CNTR,         //
    SFU_CNTR,
+   DECODE_CNTR,
    NEEDED_CNTR_SIZE,
    ///Other counters
    IC_HIT_CNTR,

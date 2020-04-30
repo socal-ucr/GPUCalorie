@@ -50,7 +50,6 @@ power_interface::power_interface(const gpgpu_sim_config &config,const int stat_s
         s++;
     }
 
-   if(init){
 	g_power_trace_filename = config.g_power_trace_filename;
 	g_metric_trace_filename = config.g_metric_trace_filename;
 	g_power_simulation_enabled=config.g_power_simulation_enabled;
@@ -60,13 +59,12 @@ power_interface::power_interface(const gpgpu_sim_config &config,const int stat_s
 
 	gpu_stat_sample_freq=stat_sample_freq;
 
-	if (g_power_trace_enabled ){
             power_trace_file = gzopen(g_power_trace_filename, "w");
 	    metric_trace_file = gzopen(g_metric_trace_filename, "w");
 	    if ((power_trace_file == NULL) || (metric_trace_file == NULL)) {
                 printf("error - could not open trace files \n");
 		exit(1);
-	    }
+            }
 	    gzsetparams(power_trace_file, g_power_trace_zlevel, Z_DEFAULT_STRATEGY);
 
 	    gzsetparams(metric_trace_file, g_power_trace_zlevel, Z_DEFAULT_STRATEGY);
@@ -74,9 +72,9 @@ power_interface::power_interface(const gpgpu_sim_config &config,const int stat_s
                 std::string power_label = "SM"+std::to_string((long long int)i) + ",";
                 gzprintf(power_trace_file,power_label.c_str());
 
-	        for(unsigned i=0; i<NUM_POWER_COMPONENTS; i++){
+	        for(unsigned j=0; j<NUM_POWER_COMPONENTS; j++){
                     std::string comp_label = "SM"+std::to_string((long long int)i) +
-                                             "_" + pwr_cmp_label[i] + ",";
+                                             "_" + pwr_cmp_label[j] + ",";
                     gzprintf(metric_trace_file,comp_label.c_str());
 	        }
 	    }
@@ -87,14 +85,13 @@ power_interface::power_interface(const gpgpu_sim_config &config,const int stat_s
             gzprintf(power_trace_file,"\n");
 
             gzprintf(metric_trace_file,"L2,");
-            gzprintf(metric_trace_file,"MEM");
+            gzprintf(metric_trace_file,"MC1");
+            gzprintf(metric_trace_file,"MC2");
+            gzprintf(metric_trace_file,"MC2");
 	    gzprintf(metric_trace_file,"\n");
 
 	    gzclose(power_trace_file);
 	    gzclose(metric_trace_file);
-	}
-        init = false;
-   }
 }
 
 void power_interface::cycle(const gpgpu_sim_config &config, const struct shader_core_config *shdr_config, class power_stat_t *power_stats, unsigned stat_sample_freq, unsigned tot_cycle, unsigned cycle, unsigned tot_inst, unsigned inst){
@@ -110,6 +107,7 @@ void power_interface::cycle(const gpgpu_sim_config &config, const struct shader_
             open_files();
             for(int SM = 0; SM < num_shaders;SM++){
                 //get component accesses
+                unsigned decode = power_stats->get_total_inst(SM);
                 unsigned alu = power_stats->get_tot_alu_accessess(SM);
                 unsigned fp = power_stats->get_tot_fp_accessess(SM);
                 unsigned dp = power_stats->get_tot_dp_accessess(SM);
@@ -119,7 +117,7 @@ void power_interface::cycle(const gpgpu_sim_config &config, const struct shader_
                 unsigned l1 = power_stats->get_l1d_hits(SM);
                 unsigned shd_mem = power_stats->get_shmem_read_access(SM);
                 
-		gzprintf(metric_trace_file,"%u,%u,%u,%u,%u,%u,%u,%u,",alu,fp,dp,int_mul32,sfu,nb_rf,l1,shd_mem);
+		gzprintf(metric_trace_file,"%u,%u,%u,%u,%u,%u,%u,%u,%u,",decode,alu,fp,dp,int_mul32,sfu,nb_rf,l1,shd_mem);
 
                 //calculate epi
 

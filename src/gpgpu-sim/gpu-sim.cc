@@ -122,6 +122,10 @@ void power_config::reg_options(class OptionParser *opp) {
   option_parser_register(opp, "-steady_state_definition", OPT_CSTR,
                          &gpu_steady_state_definition,
                          "allowed deviation:number of samples", "8:4");
+  option_parser_register(opp, "-component_epa", OPT_CSTR,
+                         &g_component_epa,
+                         "Component Energy per Access coefficients {DECODE,ALU,FP,DP,INT_MUL32,SFU,RF,L1,SHD_MEM,L2,DRAM}",
+                         "2.5e-11,3.42e-11,3.35e-11,6.59e-10,2.313e-09,9.52e-10,6.05e-12,6.15e-11,5.72e-11,6.87e-11,2.17e-10");
 }
 
 void memory_config::reg_options(class OptionParser *opp) {

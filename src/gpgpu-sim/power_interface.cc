@@ -119,12 +119,31 @@ void power_interface::cycle(const gpgpu_sim_config &config, const struct shader_
                 
 		gzprintf(metric_trace_file,"%u,%u,%u,%u,%u,%u,%u,%u,%u,",decode,alu,fp,dp,int_mul32,sfu,nb_rf,l1,shd_mem);
 
-                //calculate epi
+                //calculate power
+               
+                double decode_p = ((double)decode * config.decode_epa) / config.core_period;
+                double alu_p = ((double)alu * config.alu_epa) / config.core_period;
+                double fp_p = ((double)fp * config.fp_epa) / config.core_period;
+                double dp_p = ((double)dp * config.dp_epa) / config.core_period;
+                double int_mul32_p = ((double)int_mul32 * config.mul32_epa) / config.core_period;
+                double sfu_p = ((double)sfu * config.sfu_epa) / config.core_period;
+                double nb_rf_p = ((double)nb_rf * config.rf_epa) / config.core_period;
+                double l1_p = ((double)l1 * config.l1_epa) / config.core_period;
+                double shd_mem_p = ((double)shd_mem * config.shd_epa) / config.core_period;
 
+
+		gzprintf(power_trace_file,"%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,",
+                         decode_p,alu_p,fp_p,dp_p,int_mul32_p,sfu_p,nb_rf_p,l1_p,shd_mem_p);
             }
             unsigned l2 = power_stats->get_l2_read_hits() + power_stats->get_l2_write_hits();
             unsigned dram = power_stats->get_dram_req();
             gzprintf(metric_trace_file,"%u,%u\n",l2,dram);
+
+
+            double l2_p = ((double)l2 * config.l2_epa) / config.l2_period;
+            double dram_p = ((double)dram * config.dram_epa) / config.dram_period;
+
+            gzprintf(power_trace_file,"%.10e,%.10e\n",l2_p,dram_p);
 	    power_stats->save_stats();
             close_files();
 	}

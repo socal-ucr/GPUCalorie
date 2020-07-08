@@ -105,6 +105,9 @@ struct power_config {
     if (g_use_nonlinear_model)
       sscanf(gpu_nonlinear_model_config, "%lf:%lf", &gpu_idle_core_power,
              &gpu_min_inc_per_active_sm);
+
+    sscanf(component_epa,"%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
+      &decode_epa,&alu_epa,&fp_epa,&dp_epa,&mul32_epa,&sfu_epa,&rf_epa,&l1_epa,&shd_epa,&l2_epa,&dram_epa);
   }
   void reg_options(class OptionParser *opp);
 
@@ -130,6 +133,20 @@ struct power_config {
   char *gpu_nonlinear_model_config;
   double gpu_idle_core_power;
   double gpu_min_inc_per_active_sm;
+
+  //component energy per access
+  char * component_epa;
+  double decode_epa;
+  double alu_epa;
+  double fp_epa;
+  double dp_epa;
+  double mul32_epa;
+  double sfu_epa;
+  double rf_epa;
+  double l1_epa;
+  double shd_epa;
+  double l2_epa;
+  double dram_epa;
 };
 
 class memory_config {
@@ -372,14 +389,6 @@ class gpgpu_sim_config : public power_config,
 
   bool flush_l1() const { return gpgpu_flush_l1_cache; }
 
- private:
-  void init_clock_domains(void);
-
-  // backward pointer
-  class gpgpu_context *gpgpu_ctx;
-  bool m_valid;
-  shader_core_config m_shader_config;
-  memory_config m_memory_config;
   // clock domains - frequency
   double core_freq;
   double icnt_freq;
@@ -389,6 +398,15 @@ class gpgpu_sim_config : public power_config,
   double icnt_period;
   double dram_period;
   double l2_period;
+
+ private:
+  void init_clock_domains(void);
+
+  // backward pointer
+  class gpgpu_context *gpgpu_ctx;
+  bool m_valid;
+  shader_core_config m_shader_config;
+  memory_config m_memory_config;
 
   // GPGPU-Sim timing model options
   unsigned long long gpu_max_cycle_opt;

@@ -29,9 +29,9 @@
 #ifndef POWER_INTERFACE_H_
 #define POWER_INTERFACE_H_
 
-#include "gpu-sim.h"
-#include "power_stat.h"
-#include "shader.h"
+#include "../gpgpu-sim/gpu-sim.h"
+#include "../gpgpu-sim/power_stat.h"
+#include "../gpgpu-sim/shader.h"
 #include <iostream>
 #include <fstream>
 #include <zlib.h>
@@ -39,10 +39,8 @@
 
 class power_interface {
     public:
-    power_interface(const gpgpu_sim_config &config,const int stat_sample_freq);
-    void cycle(const gpgpu_sim_config &config, const struct shader_core_config *shdr_config,
-               class power_stat_t *power_stats, unsigned stat_sample_freq, unsigned tot_cycle,
-               unsigned cycle, unsigned tot_inst, unsigned inst);
+    power_interface(const gpgpu_sim_config &config);
+    void cycle(const gpgpu_sim_config &config, class power_stat_t *power_stats);
     private:
 
     void open_files();
@@ -53,7 +51,6 @@ class power_interface {
     bool g_power_simulation_enabled;
     bool g_power_trace_enabled;
     int g_power_trace_zlevel;
-    unsigned gpu_stat_sample_freq;
     int num_shaders;
 
     gzFile power_trace_file;

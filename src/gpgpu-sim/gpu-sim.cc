@@ -66,7 +66,7 @@
 #include "stats.h"
 #include "visualizer.h"
 
-#include "power_interface.h"
+#include "gpu_calorie.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -216,6 +216,44 @@ void memory_config::reg_options(class OptionParser *opp) {
   option_parser_register(opp, "-icnt_flit_size", OPT_UINT32, &icnt_flit_size,
                          "icnt_flit_size", "32");
   m_address_mapping.addrdec_setoption(opp);
+}
+
+void thermal_config::reg_options(class OptionParser * opp)
+{
+  option_parser_register(opp, "-floorplan_input_file", OPT_CSTR,
+                           &g_floorplan_input_file,
+                           "Hotspot floorplan .flp file",
+                           "hotspot.flp");
+
+  option_parser_register(opp, "-thermal_config_file", OPT_CSTR,
+                           &g_thermal_config_file,
+                           "Hotspot config file",
+                           "hotspot.config");
+
+  option_parser_register(opp, "-flp_block_names", OPT_CSTR,
+                           &g_flp_block_names,
+                           "flp_block_names",
+                           "SM0,SM1,SM2,SM3,SM4,SM5,L2,MC1,MC2,MC3");
+
+  option_parser_register(opp, "-thermal_simulation_enabled", OPT_BOOL,
+                           &g_thermal_simulation_enabled,
+                           "Turn on power simulator (1=On, 0=Off)",
+                           "0");
+    // Output Data Formats
+  option_parser_register(opp, "-thermal_trace_enabled", OPT_BOOL,
+                           &g_thermal_trace_enabled,
+                           "produce a file for the thermal trace (1=On, 0=Off)",
+                           "0");
+
+  option_parser_register(opp, "-thermal_trace_zlevel", OPT_INT32,
+                           &g_thermal_trace_zlevel,
+                           "Compression level of the power trace output log (0=no comp, 9=highest)", 
+                           "6");
+
+  option_parser_register(opp, "-enable_detailed_3d", OPT_BOOL,
+                           &g_enable_detailed_3d,
+                           "enable 3d simulation",
+                           "0");
 }
 
 void shader_core_config::reg_options(class OptionParser *opp) {
@@ -553,6 +591,8 @@ void gpgpu_sim_config::reg_options(option_parser_t opp) {
   m_shader_config.reg_options(opp);
   m_memory_config.reg_options(opp);
   power_config::reg_options(opp);
+  thermal_config::reg_options(opp);
+
   option_parser_register(opp, "-gpgpu_max_cycle", OPT_INT64, &gpu_max_cycle_opt,
                          "terminates gpu simulation early (0 = no limit)", "0");
   option_parser_register(opp, "-gpgpu_max_insn", OPT_INT64, &gpu_max_insn_opt,
@@ -825,7 +865,7 @@ gpgpu_sim::gpgpu_sim(const gpgpu_sim_config &config, gpgpu_context *ctx)
   ptx_file_line_stats_create_exposed_latency_tracker(m_config.num_shader());
 
 #ifdef GPGPUSIM_POWER_MODEL
-    m_power_interface = new power_interface(m_config,m_config.gpu_stat_sample_freq);
+    m_gpu_calorie = new gpu_calorie(m_config,m_config.gpu_stat_sample_freq);
 #endif
 
   m_shader_stats = new shader_core_stats(m_shader_config);
@@ -1860,11 +1900,8 @@ void gpgpu_sim::cycle() {
 
 #ifdef GPGPUSIM_POWER_MODEL
     if(m_config.g_power_simulation_enabled){
-        m_power_interface->cycle(m_config, getShaderCoreConfig(),
-                                 m_power_stats, m_config.gpu_stat_sample_freq,
-                                 gpu_tot_sim_cycle, gpu_sim_cycle,
-                                 gpu_tot_sim_insn, gpu_sim_insn);
-      }
+        m_gpu_calorie->cycle(m_config, m_power_stats, gpu_tot_sim_cycle + gpu_sim_cycle);
+    }
 #endif
 
     issue_block2core();

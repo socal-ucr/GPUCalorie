@@ -149,6 +149,39 @@ struct power_config {
   double dram_epa;
 };
 
+class thermal_config {
+    thermal_config() {
+    }
+    void init ()
+    {
+        // initialize file name if it is not set
+        time_t curr_time;
+        time(&curr_time);
+        char *date = ctime(&curr_time);
+        char *s = date;
+        while (*s) {
+            if (*s == ' ' || *s == '\t' || *s == ':') *s = '-';
+            if (*s == '\n' || *s == '\r' ) *s = 0;
+            s++;
+        }
+        char buf1[1024];
+        snprintf(buf1,1024,"gpgpusim_thermal_trace__%s.log.gz",date);
+        g_thermal_trace_filename = strdup(buf1);
+    }
+
+    void reg_options(class OptionParser * opp);
+
+    char *g_floorplan_input_file;
+    char *g_thermal_config_file;
+    char *g_flp_block_names;
+    bool g_thermal_simulation_enabled;
+    bool g_thermal_trace_enabled;
+    int g_thermal_trace_zlevel;
+    bool g_enable_detailed_3d;
+    char *g_thermal_trace_filename;
+
+};
+
 class memory_config {
  public:
   memory_config(gpgpu_context *ctx) {
@@ -338,6 +371,7 @@ class memory_config {
 extern bool g_interactive_debugger_enabled;
 
 class gpgpu_sim_config : public power_config,
+                         public thermal_config,
                          public gpgpu_functional_sim_config {
  public:
   gpgpu_sim_config(gpgpu_context *ctx)
@@ -356,6 +390,7 @@ class gpgpu_sim_config : public power_config,
     m_memory_config.init();
     init_clock_domains();
     power_config::init();
+    thermal_config::init();
     Trace::init();
 
     // initialize file name if it is not set
@@ -633,11 +668,12 @@ class gpgpu_sim : public gpgpu_t {
   const shader_core_config *m_shader_config;
   const memory_config *m_memory_config;
 
+  class gpu_calorie * m_gpu_calorie;
+
   // stats
   class shader_core_stats *m_shader_stats;
   class memory_stats_t *m_memory_stats;
   class power_stat_t *m_power_stats;
-  class power_interface *m_power_interface;
   unsigned long long last_gpu_sim_insn;
 
   unsigned long long last_liveness_message_time;

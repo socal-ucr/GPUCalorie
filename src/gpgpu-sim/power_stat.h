@@ -83,7 +83,10 @@ struct shader_core_power_stats_pod {
   unsigned *m_imul32_cntr[NUM_STAT_IDX];
   unsigned *m_sfu_cntr[NUM_STAT_IDX];
   unsigned *m_rf_cntr[NUM_STAT_IDX]; 
-//</AliJahan>
+  //</AliJahan>
+    
+  double *m_sm_power[NUM_STAT_IDX];
+  double *m_sm_temp[NUM_STAT_IDX];
 };
 
 class power_core_stat_t : public shader_core_power_stats_pod {
@@ -121,6 +124,12 @@ struct mem_power_stats_pod {
   // Interconnect stats
   long *n_simt_to_mem[NUM_STAT_IDX];
   long *n_mem_to_simt[NUM_STAT_IDX];
+
+  double m_l2_power[NUM_STAT_IDX];
+  double m_dram_power[NUM_STAT_IDX];
+
+  double m_l2_temp[NUM_STAT_IDX];
+  double m_dram_temp[NUM_STAT_IDX];
 };
 
 class power_mem_stat_t : public mem_power_stats_pod {
@@ -155,6 +164,36 @@ class power_stat_t {
     *m_active_sms = 0;
   }
 
+
+  void update_power(double * vals) {
+    for(unsigned i=0; i<m_config->num_shader(); ++i) {
+	pwr_core_stat->m_sm_power[CURRENT_STAT_IDX][i] = vals[i];
+    }
+    pwr_mem_stat->m_l2_power[CURRENT_STAT_IDX] = vals[m_config->num_shader()];
+    pwr_mem_stat->m_dram_power[CURRENT_STAT_IDX] = vals[m_config->num_shader()+1];
+  }
+
+  double get_sm_power(unsigned shader_id) {
+    assert(shader_id<m_config->num_shader());
+    return pwr_core_stat->m_sm_power[CURRENT_STAT_IDX][shader_id];
+  }
+  double get_l2_power() {
+    return pwr_mem_stat->m_l2_power[CURRENT_STAT_IDX];
+  }
+  double get_dram_power() {
+    return pwr_mem_stat->m_dram_power[CURRENT_STAT_IDX];
+  }
+
+  void set_sm_temps(double temp,unsigned shader_id) {
+    assert(shader_id<m_config->num_shader());
+    pwr_core_stat->m_sm_temp[CURRENT_STAT_IDX][shader_id] = temp;
+  }
+  double set_l2_temps(double temp) {
+    pwr_mem_stat->m_l2_power[CURRENT_STAT_IDX] = temp;
+  }
+  double set_dram_temps(double temp) {
+    pwr_mem_stat->m_dram_power[CURRENT_STAT_IDX] = temp;
+  }
   //<AliJahan/>
   unsigned get_tot_alu_accessess(unsigned shader_id){
     assert(shader_id<m_config->num_shader());

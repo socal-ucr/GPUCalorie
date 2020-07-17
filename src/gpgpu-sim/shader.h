@@ -1658,6 +1658,10 @@ struct shader_core_stats_pod {
   unsigned *m_sfu_cntr;
   unsigned *m_rf_cntr; 
   //</AliJahan>
+  
+  double   *m_sm_power;
+  double   *m_sm_temp;
+  
   unsigned gpgpu_n_load_insn;
   unsigned gpgpu_n_store_insn;
   unsigned gpgpu_n_shmem_insn;

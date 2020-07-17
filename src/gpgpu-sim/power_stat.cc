@@ -81,6 +81,12 @@ void power_mem_stat_t::init() {
                                       sizeof(long));  // Counted at SM
     n_simt_to_mem[i] = (long *)calloc(m_core_config->n_simt_clusters,
                                       sizeof(long));  // Counted at SM
+
+    m_l2_power[i] = 0.0;
+    m_dram_power[i] = 0.0;
+
+    m_l2_temp[i] = 0.0;
+    m_dram_temp[i] = 0.0;
   }
 }
 
@@ -264,8 +270,10 @@ void power_core_stat_t::init() {
   m_imul32_cntr[CURRENT_STAT_IDX]=m_core_stats->m_imul32_cntr;
   m_sfu_cntr[CURRENT_STAT_IDX]=m_core_stats->m_sfu_cntr;
   m_rf_cntr[CURRENT_STAT_IDX]=m_core_stats->m_rf_cntr;
-
   //</AliJahan>
+  m_sm_power[CURRENT_STAT_IDX]=m_core_stats->m_sm_power;
+  m_sm_temp[CURRENT_STAT_IDX]=m_core_stats->m_sm_temp;
+
   m_pipeline_duty_cycle[PREV_STAT_IDX] =
       (float *)calloc(m_config->num_shader(), sizeof(float));
   m_num_decoded_insn[PREV_STAT_IDX] =
@@ -339,6 +347,10 @@ void power_core_stat_t::init() {
   m_rf_cntr[PREV_STAT_IDX] =
       (unsigned *)calloc(m_config->num_shader(),sizeof(unsigned));
   //</AliJahan>
+  m_sm_power[PREV_STAT_IDX] =
+      (double *)calloc(m_config->num_shader(),sizeof(double));
+  m_sm_temp[PREV_STAT_IDX] = 
+      (double *)calloc(m_config->num_shader(),sizeof(double));
 }
 
 void power_core_stat_t::save_stats() {
@@ -412,7 +424,11 @@ void power_core_stat_t::save_stats() {
     m_rf_cntr[PREV_STAT_IDX][i] =
         m_rf_cntr[CURRENT_STAT_IDX][i];
     //</AliJahan>
-  }
+    m_sm_power[PREV_STAT_IDX][i] =
+      m_sm_power[CURRENT_STAT_IDX][i];
+    m_sm_temp[PREV_STAT_IDX][i] =
+      m_sm_temp[CURRENT_STAT_IDX][i];
+    }
 }
 
 power_stat_t::power_stat_t(const shader_core_config *shader_config,

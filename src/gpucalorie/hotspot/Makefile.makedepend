@@ -1,0 +1,298 @@
+# DO NOT DELETE
+
+.//flp.o: /usr/include/stdio.h /usr/include/features.h
+.//flp.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//flp.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//flp.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//flp.o: /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h
+.//flp.o: /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h
+.//flp.o: /usr/include/string.h /usr/include/xlocale.h /usr/include/strings.h
+.//flp.o: /usr/include/stdlib.h /usr/include/bits/waitflags.h
+.//flp.o: /usr/include/bits/waitstatus.h /usr/include/endian.h
+.//flp.o: /usr/include/bits/endian.h /usr/include/bits/byteswap.h
+.//flp.o: /usr/include/bits/byteswap-16.h /usr/include/sys/types.h
+.//flp.o: /usr/include/time.h /usr/include/sys/select.h
+.//flp.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
+.//flp.o: /usr/include/bits/time.h /usr/include/sys/sysmacros.h
+.//flp.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
+.//flp.o: /usr/include/bits/stdlib-float.h /usr/include/math.h
+.//flp.o: /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h
+.//flp.o: /usr/include/bits/huge_vall.h /usr/include/bits/inf.h
+.//flp.o: /usr/include/bits/nan.h /usr/include/bits/mathdef.h
+.//flp.o: /usr/include/bits/mathcalls.h flp.h util.h npe.h shape.h
+.//flp.o: temperature.h temperature_block.h
+.//flp_desc.o: /usr/include/stdio.h /usr/include/features.h
+.//flp_desc.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//flp_desc.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//flp_desc.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//flp_desc.o: /usr/include/libio.h /usr/include/_G_config.h
+.//flp_desc.o: /usr/include/wchar.h /usr/include/bits/stdio_lim.h
+.//flp_desc.o: /usr/include/bits/sys_errlist.h /usr/include/strings.h
+.//flp_desc.o: /usr/include/string.h /usr/include/xlocale.h
+.//flp_desc.o: /usr/include/stdlib.h /usr/include/bits/waitflags.h
+.//flp_desc.o: /usr/include/bits/waitstatus.h /usr/include/endian.h
+.//flp_desc.o: /usr/include/bits/endian.h /usr/include/bits/byteswap.h
+.//flp_desc.o: /usr/include/bits/byteswap-16.h /usr/include/sys/types.h
+.//flp_desc.o: /usr/include/time.h /usr/include/sys/select.h
+.//flp_desc.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
+.//flp_desc.o: /usr/include/bits/time.h /usr/include/sys/sysmacros.h
+.//flp_desc.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
+.//flp_desc.o: /usr/include/bits/stdlib-float.h flp.h util.h shape.h npe.h
+.//hotfloorplan.o: /usr/include/stdio.h /usr/include/features.h
+.//hotfloorplan.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//hotfloorplan.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//hotfloorplan.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//hotfloorplan.o: /usr/include/libio.h /usr/include/_G_config.h
+.//hotfloorplan.o: /usr/include/wchar.h /usr/include/bits/stdio_lim.h
+.//hotfloorplan.o: /usr/include/bits/sys_errlist.h /usr/include/string.h
+.//hotfloorplan.o: /usr/include/xlocale.h /usr/include/strings.h flp.h util.h
+.//hotfloorplan.o: temperature.h wire.h /usr/include/math.h
+.//hotfloorplan.o: /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h
+.//hotfloorplan.o: /usr/include/bits/huge_vall.h /usr/include/bits/inf.h
+.//hotfloorplan.o: /usr/include/bits/nan.h /usr/include/bits/mathdef.h
+.//hotfloorplan.o: /usr/include/bits/mathcalls.h hotfloorplan.h
+.//hotspot.o: /usr/include/stdio.h /usr/include/features.h
+.//hotspot.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//hotspot.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//hotspot.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//hotspot.o: /usr/include/libio.h /usr/include/_G_config.h
+.//hotspot.o: /usr/include/wchar.h /usr/include/bits/stdio_lim.h
+.//hotspot.o: /usr/include/bits/sys_errlist.h /usr/include/stdlib.h
+.//hotspot.o: /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h
+.//hotspot.o: /usr/include/endian.h /usr/include/bits/endian.h
+.//hotspot.o: /usr/include/bits/byteswap.h /usr/include/bits/byteswap-16.h
+.//hotspot.o: /usr/include/sys/types.h /usr/include/time.h
+.//hotspot.o: /usr/include/sys/select.h /usr/include/bits/select.h
+.//hotspot.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
+.//hotspot.o: /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h
+.//hotspot.o: /usr/include/alloca.h /usr/include/bits/stdlib-float.h
+.//hotspot.o: /usr/include/assert.h /usr/include/string.h
+.//hotspot.o: /usr/include/xlocale.h /usr/include/ctype.h /usr/include/math.h
+.//hotspot.o: /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h
+.//hotspot.o: /usr/include/bits/huge_vall.h /usr/include/bits/inf.h
+.//hotspot.o: /usr/include/bits/nan.h /usr/include/bits/mathdef.h
+.//hotspot.o: /usr/include/bits/mathcalls.h flp.h util.h package.h
+.//hotspot.o: temperature.h temperature_block.h temperature_grid.h hotspot.h
+.//npe.o: /usr/include/stdio.h /usr/include/features.h
+.//npe.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//npe.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//npe.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//npe.o: /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h
+.//npe.o: /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h
+.//npe.o: /usr/include/strings.h /usr/include/string.h /usr/include/xlocale.h
+.//npe.o: /usr/include/stdlib.h /usr/include/bits/waitflags.h
+.//npe.o: /usr/include/bits/waitstatus.h /usr/include/endian.h
+.//npe.o: /usr/include/bits/endian.h /usr/include/bits/byteswap.h
+.//npe.o: /usr/include/bits/byteswap-16.h /usr/include/sys/types.h
+.//npe.o: /usr/include/time.h /usr/include/sys/select.h
+.//npe.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
+.//npe.o: /usr/include/bits/time.h /usr/include/sys/sysmacros.h
+.//npe.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
+.//npe.o: /usr/include/bits/stdlib-float.h /usr/include/math.h
+.//npe.o: /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h
+.//npe.o: /usr/include/bits/huge_vall.h /usr/include/bits/inf.h
+.//npe.o: /usr/include/bits/nan.h /usr/include/bits/mathdef.h
+.//npe.o: /usr/include/bits/mathcalls.h npe.h flp.h util.h
+.//package.o: /usr/include/stdio.h /usr/include/features.h
+.//package.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//package.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//package.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//package.o: /usr/include/libio.h /usr/include/_G_config.h
+.//package.o: /usr/include/wchar.h /usr/include/bits/stdio_lim.h
+.//package.o: /usr/include/bits/sys_errlist.h /usr/include/stdlib.h
+.//package.o: /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h
+.//package.o: /usr/include/endian.h /usr/include/bits/endian.h
+.//package.o: /usr/include/bits/byteswap.h /usr/include/bits/byteswap-16.h
+.//package.o: /usr/include/sys/types.h /usr/include/time.h
+.//package.o: /usr/include/sys/select.h /usr/include/bits/select.h
+.//package.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
+.//package.o: /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h
+.//package.o: /usr/include/alloca.h /usr/include/bits/stdlib-float.h
+.//package.o: /usr/include/string.h /usr/include/xlocale.h
+.//package.o: /usr/include/strings.h /usr/include/math.h
+.//package.o: /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h
+.//package.o: /usr/include/bits/huge_vall.h /usr/include/bits/inf.h
+.//package.o: /usr/include/bits/nan.h /usr/include/bits/mathdef.h
+.//package.o: /usr/include/bits/mathcalls.h package.h flp.h util.h
+.//package.o: temperature.h
+.//RCutil.o: /usr/include/stdio.h /usr/include/features.h
+.//RCutil.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//RCutil.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//RCutil.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//RCutil.o: /usr/include/libio.h /usr/include/_G_config.h
+.//RCutil.o: /usr/include/wchar.h /usr/include/bits/stdio_lim.h
+.//RCutil.o: /usr/include/bits/sys_errlist.h /usr/include/stdlib.h
+.//RCutil.o: /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h
+.//RCutil.o: /usr/include/endian.h /usr/include/bits/endian.h
+.//RCutil.o: /usr/include/bits/byteswap.h /usr/include/bits/byteswap-16.h
+.//RCutil.o: /usr/include/sys/types.h /usr/include/time.h
+.//RCutil.o: /usr/include/sys/select.h /usr/include/bits/select.h
+.//RCutil.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
+.//RCutil.o: /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h
+.//RCutil.o: /usr/include/alloca.h /usr/include/bits/stdlib-float.h
+.//RCutil.o: /usr/include/assert.h /usr/include/math.h
+.//RCutil.o: /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h
+.//RCutil.o: /usr/include/bits/huge_vall.h /usr/include/bits/inf.h
+.//RCutil.o: /usr/include/bits/nan.h /usr/include/bits/mathdef.h
+.//RCutil.o: /usr/include/bits/mathcalls.h temperature.h flp.h util.h
+.//shape.o: /usr/include/stdio.h /usr/include/features.h
+.//shape.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//shape.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//shape.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//shape.o: /usr/include/libio.h /usr/include/_G_config.h
+.//shape.o: /usr/include/wchar.h /usr/include/bits/stdio_lim.h
+.//shape.o: /usr/include/bits/sys_errlist.h /usr/include/strings.h
+.//shape.o: /usr/include/string.h /usr/include/xlocale.h
+.//shape.o: /usr/include/stdlib.h /usr/include/bits/waitflags.h
+.//shape.o: /usr/include/bits/waitstatus.h /usr/include/endian.h
+.//shape.o: /usr/include/bits/endian.h /usr/include/bits/byteswap.h
+.//shape.o: /usr/include/bits/byteswap-16.h /usr/include/sys/types.h
+.//shape.o: /usr/include/time.h /usr/include/sys/select.h
+.//shape.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
+.//shape.o: /usr/include/bits/time.h /usr/include/sys/sysmacros.h
+.//shape.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
+.//shape.o: /usr/include/bits/stdlib-float.h /usr/include/math.h
+.//shape.o: /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h
+.//shape.o: /usr/include/bits/huge_vall.h /usr/include/bits/inf.h
+.//shape.o: /usr/include/bits/nan.h /usr/include/bits/mathdef.h
+.//shape.o: /usr/include/bits/mathcalls.h shape.h flp.h util.h npe.h
+.//sim-template.o: /usr/include/string.h /usr/include/features.h
+.//sim-template.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//sim-template.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//sim-template.o: /usr/include/xlocale.h temperature.h flp.h util.h
+.//sim-template.o: /usr/include/stdio.h /usr/include/bits/types.h
+.//sim-template.o: /usr/include/bits/typesizes.h /usr/include/libio.h
+.//sim-template.o: /usr/include/_G_config.h /usr/include/wchar.h
+.//sim-template.o: /usr/include/bits/stdio_lim.h
+.//sim-template.o: /usr/include/bits/sys_errlist.h temperature_grid.h
+.//temperature_block.o: /usr/include/stdio.h /usr/include/features.h
+.//temperature_block.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//temperature_block.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//temperature_block.o: /usr/include/bits/types.h
+.//temperature_block.o: /usr/include/bits/typesizes.h /usr/include/libio.h
+.//temperature_block.o: /usr/include/_G_config.h /usr/include/wchar.h
+.//temperature_block.o: /usr/include/bits/stdio_lim.h
+.//temperature_block.o: /usr/include/bits/sys_errlist.h /usr/include/stdlib.h
+.//temperature_block.o: /usr/include/bits/waitflags.h
+.//temperature_block.o: /usr/include/bits/waitstatus.h /usr/include/endian.h
+.//temperature_block.o: /usr/include/bits/endian.h
+.//temperature_block.o: /usr/include/bits/byteswap.h
+.//temperature_block.o: /usr/include/bits/byteswap-16.h
+.//temperature_block.o: /usr/include/sys/types.h /usr/include/time.h
+.//temperature_block.o: /usr/include/sys/select.h /usr/include/bits/select.h
+.//temperature_block.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
+.//temperature_block.o: /usr/include/sys/sysmacros.h
+.//temperature_block.o: /usr/include/bits/pthreadtypes.h
+.//temperature_block.o: /usr/include/alloca.h
+.//temperature_block.o: /usr/include/bits/stdlib-float.h
+.//temperature_block.o: /usr/include/string.h /usr/include/xlocale.h
+.//temperature_block.o: /usr/include/strings.h temperature_block.h
+.//temperature_block.o: temperature.h flp.h util.h
+.//temperature.o: /usr/include/stdio.h /usr/include/features.h
+.//temperature.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//temperature.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//temperature.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//temperature.o: /usr/include/libio.h /usr/include/_G_config.h
+.//temperature.o: /usr/include/wchar.h /usr/include/bits/stdio_lim.h
+.//temperature.o: /usr/include/bits/sys_errlist.h /usr/include/stdlib.h
+.//temperature.o: /usr/include/bits/waitflags.h
+.//temperature.o: /usr/include/bits/waitstatus.h /usr/include/endian.h
+.//temperature.o: /usr/include/bits/endian.h /usr/include/bits/byteswap.h
+.//temperature.o: /usr/include/bits/byteswap-16.h /usr/include/sys/types.h
+.//temperature.o: /usr/include/time.h /usr/include/sys/select.h
+.//temperature.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
+.//temperature.o: /usr/include/bits/time.h /usr/include/sys/sysmacros.h
+.//temperature.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
+.//temperature.o: /usr/include/bits/stdlib-float.h /usr/include/string.h
+.//temperature.o: /usr/include/xlocale.h /usr/include/strings.h
+.//temperature.o: /usr/include/math.h /usr/include/bits/huge_val.h
+.//temperature.o: /usr/include/bits/huge_valf.h /usr/include/bits/huge_vall.h
+.//temperature.o: /usr/include/bits/inf.h /usr/include/bits/nan.h
+.//temperature.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
+.//temperature.o: temperature.h flp.h util.h temperature_block.h
+.//temperature.o: temperature_grid.h
+.//temperature_grid.o: /usr/include/stdio.h /usr/include/features.h
+.//temperature_grid.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//temperature_grid.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//temperature_grid.o: /usr/include/bits/types.h
+.//temperature_grid.o: /usr/include/bits/typesizes.h /usr/include/libio.h
+.//temperature_grid.o: /usr/include/_G_config.h /usr/include/wchar.h
+.//temperature_grid.o: /usr/include/bits/stdio_lim.h
+.//temperature_grid.o: /usr/include/bits/sys_errlist.h /usr/include/stdlib.h
+.//temperature_grid.o: /usr/include/bits/waitflags.h
+.//temperature_grid.o: /usr/include/bits/waitstatus.h /usr/include/endian.h
+.//temperature_grid.o: /usr/include/bits/endian.h
+.//temperature_grid.o: /usr/include/bits/byteswap.h
+.//temperature_grid.o: /usr/include/bits/byteswap-16.h
+.//temperature_grid.o: /usr/include/sys/types.h /usr/include/time.h
+.//temperature_grid.o: /usr/include/sys/select.h /usr/include/bits/select.h
+.//temperature_grid.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
+.//temperature_grid.o: /usr/include/sys/sysmacros.h
+.//temperature_grid.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
+.//temperature_grid.o: /usr/include/bits/stdlib-float.h /usr/include/string.h
+.//temperature_grid.o: /usr/include/xlocale.h /usr/include/strings.h
+.//temperature_grid.o: /usr/include/math.h /usr/include/bits/huge_val.h
+.//temperature_grid.o: /usr/include/bits/huge_valf.h
+.//temperature_grid.o: /usr/include/bits/huge_vall.h /usr/include/bits/inf.h
+.//temperature_grid.o: /usr/include/bits/nan.h /usr/include/bits/mathdef.h
+.//temperature_grid.o: /usr/include/bits/mathcalls.h temperature_grid.h
+.//temperature_grid.o: temperature.h flp.h util.h
+.//temperature_mobile.o: /usr/include/stdio.h /usr/include/features.h
+.//temperature_mobile.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//temperature_mobile.o: /usr/include/bits/wordsize.h
+.//temperature_mobile.o: /usr/include/gnu/stubs.h /usr/include/bits/types.h
+.//temperature_mobile.o: /usr/include/bits/typesizes.h /usr/include/libio.h
+.//temperature_mobile.o: /usr/include/_G_config.h /usr/include/wchar.h
+.//temperature_mobile.o: /usr/include/bits/stdio_lim.h
+.//temperature_mobile.o: /usr/include/bits/sys_errlist.h
+.//temperature_mobile.o: /usr/include/stdlib.h /usr/include/bits/waitflags.h
+.//temperature_mobile.o: /usr/include/bits/waitstatus.h /usr/include/endian.h
+.//temperature_mobile.o: /usr/include/bits/endian.h
+.//temperature_mobile.o: /usr/include/bits/byteswap.h
+.//temperature_mobile.o: /usr/include/bits/byteswap-16.h
+.//temperature_mobile.o: /usr/include/sys/types.h /usr/include/time.h
+.//temperature_mobile.o: /usr/include/sys/select.h /usr/include/bits/select.h
+.//temperature_mobile.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
+.//temperature_mobile.o: /usr/include/sys/sysmacros.h
+.//temperature_mobile.o: /usr/include/bits/pthreadtypes.h
+.//temperature_mobile.o: /usr/include/alloca.h
+.//temperature_mobile.o: /usr/include/bits/stdlib-float.h
+.//temperature_mobile.o: /usr/include/string.h /usr/include/xlocale.h
+.//temperature_mobile.o: /usr/include/strings.h /usr/include/math.h
+.//temperature_mobile.o: /usr/include/bits/huge_val.h
+.//temperature_mobile.o: /usr/include/bits/huge_valf.h
+.//temperature_mobile.o: /usr/include/bits/huge_vall.h
+.//temperature_mobile.o: /usr/include/bits/inf.h /usr/include/bits/nan.h
+.//temperature_mobile.o: /usr/include/bits/mathdef.h
+.//temperature_mobile.o: /usr/include/bits/mathcalls.h flp.h util.h
+.//util.o: /usr/include/stdio.h /usr/include/features.h
+.//util.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//util.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//util.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//util.o: /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h
+.//util.o: /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h
+.//util.o: /usr/include/stdlib.h /usr/include/bits/waitflags.h
+.//util.o: /usr/include/bits/waitstatus.h /usr/include/endian.h
+.//util.o: /usr/include/bits/endian.h /usr/include/bits/byteswap.h
+.//util.o: /usr/include/bits/byteswap-16.h /usr/include/sys/types.h
+.//util.o: /usr/include/time.h /usr/include/sys/select.h
+.//util.o: /usr/include/bits/select.h /usr/include/bits/sigset.h
+.//util.o: /usr/include/bits/time.h /usr/include/sys/sysmacros.h
+.//util.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
+.//util.o: /usr/include/bits/stdlib-float.h /usr/include/math.h
+.//util.o: /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h
+.//util.o: /usr/include/bits/huge_vall.h /usr/include/bits/inf.h
+.//util.o: /usr/include/bits/nan.h /usr/include/bits/mathdef.h
+.//util.o: /usr/include/bits/mathcalls.h /usr/include/string.h
+.//util.o: /usr/include/xlocale.h /usr/include/strings.h
+.//util.o: /usr/include/assert.h util.h
+.//wire.o: wire.h flp.h util.h /usr/include/stdio.h /usr/include/features.h
+.//wire.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h
+.//wire.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+.//wire.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+.//wire.o: /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h
+.//wire.o: /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h
+.//wire.o: /usr/include/math.h /usr/include/bits/huge_val.h
+.//wire.o: /usr/include/bits/huge_valf.h /usr/include/bits/huge_vall.h
+.//wire.o: /usr/include/bits/inf.h /usr/include/bits/nan.h
+.//wire.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h

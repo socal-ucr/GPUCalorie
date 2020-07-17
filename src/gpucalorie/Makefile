@@ -53,8 +53,6 @@ else
 	CXXFLAGS += 
 endif
 
-CXXFLAGS += -I$(CUDA_INSTALL_PATH)/include
-
 POWER_FLAGS=
 ifneq ($(GPGPUSIM_POWER_MODEL),)
 	POWER_FLAGS = -I$(GPGPUSIM_POWER_MODEL) -DGPGPUSIM_POWER_MODEL
@@ -66,15 +64,9 @@ OPTFLAGS += -DCUDART_VERSION=$(CUDART_VERSION)
 CPP = g++ $(SNOW)
 OEXT = o
 
-OUTPUT_DIR=$(SIM_OBJ_FILES_DIR)/gpgpu-sim
+OUTPUT_DIR=$(SIM_OBJ_FILES_DIR)/gpucalorie
 
 SRCS = $(shell ls *.cc)
-
-EXCLUDES = 
-
-ifeq ($(GPGPUSIM_POWER_MODEL), )
-EXCLUDES +=
-endif
 
 CSRCS = $(filter-out $(EXCLUDES), $(SRCS))
 
@@ -96,12 +88,4 @@ clean:
 	rm -f *.o core *~ *.a 
 	rm -f Makefile.makedepend Makefile.makedepend.bak
 
-$(OUTPUT_DIR)/option_parser.$(OEXT): option_parser.h
-
-$(OUTPUT_DIR)/dram_sched.$(OEXT): $(OUTPUT_DIR)/../cuda-sim/ptx.tab.h
-
-$(OUTPUT_DIR)/../cuda-sim/ptx.tab.h:
-	make -C ../cuda-sim/ $(OUTPUT_DIR)/../cuda-sim/ptx.tab.c
-
 include $(OUTPUT_DIR)/Makefile.makedepend
-

@@ -58,6 +58,7 @@ ifneq ($(GPGPUSIM_POWER_MODEL),)
 	POWER_FLAGS = -I$(GPGPUSIM_POWER_MODEL) -DGPGPUSIM_POWER_MODEL
 endif
 
+CXXFLAGS += -I$(CUDA_INSTALL_PATH)/include
 OPTFLAGS += -g3 -fPIC
 OPTFLAGS += -DCUDART_VERSION=$(CUDART_VERSION)
 
@@ -70,10 +71,9 @@ SRCS = $(shell ls *.cc)
 
 CSRCS = $(filter-out $(EXCLUDES), $(SRCS))
 
-OBJS = $(CSRCS:%.cc=$(OUTPUT_DIR)/%.$(OEXT))
- 
-libgpu_uarch_sim.a:$(OBJS)
-	ar rcs  $(OUTPUT_DIR)/libgpu_uarch_sim.a $(OBJS)
+OBJS = $(CSRCS:%.cc=$(OUTPUT_DIR)/%.$(OEXT)) 
+
+all: $(OBJS)
 
 $(OUTPUT_DIR)/Makefile.makedepend: depend
 

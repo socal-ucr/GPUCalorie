@@ -1987,46 +1987,7 @@ class shader_core_ctx : public core_t {
   void display_simt_state(FILE *fout, int mask) const;
   void display_pipeline(FILE *fout, int print_mem, int mask3bit) const;
   //<AliJahan/>
-  void update_shader_stat(unsigned cntr_idx, unsigned active_count){
-    switch (cntr_idx){
-      case ALU_CNTR: //0
-        m_stats->m_alu_cntr[m_sid]=m_stats->m_alu_cntr[m_sid]+1;//+active_count;
-        break;
-      case SP_CNTR: //2
-        m_stats->m_sp_cntr[m_sid]=m_stats->m_sp_cntr[m_sid]+1;//+active_count;
-        break;
-      case FP_CNTR: //1
-        m_stats->m_fp_cntr[m_sid]=m_stats->m_fp_cntr[m_sid]+1;//+active_count;
-        break;
-      case DP_CNTR: //3
-        m_stats->m_dp_cntr[m_sid]=m_stats->m_dp_cntr[m_sid]+1;//+active_count;
-        break;
-      case LG_CNTR: //6
-      case EXP_CNTR: //7
-      case RCP_CNTR: //8
-      case SQRT_CNTR: //9
-      case SFU_CNTR: //12
-        m_stats->m_sfu_cntr[m_sid]=m_stats->m_sfu_cntr[m_sid]+1;//+active_count;
-        break;
-      case RF_RD_CNTR: //10
-        m_stats->m_rf_cntr[m_sid]=m_stats->m_rf_cntr[m_sid]+1;//+active_count;
-        break;
-      case RF_WR_CNTR: //11
-        m_stats->m_rf_cntr[m_sid]=m_stats->m_rf_cntr[m_sid]+1;//+active_count;
-        break;
-      case INT_MUL32_CNTR: //4
-        m_stats->m_imul32_cntr[m_sid]=m_stats->m_imul32_cntr[m_sid]+1;//+active_count;
-        break;
-      case DECODE_CNTR: //13
-        m_stats->m_decode_cntr[m_sid]=m_stats->m_decode_cntr[m_sid]+1;//+active_count;
-        break;
-      default:
-        printf("shader.h:%d counter with index %d is not supported\n",__LINE__, cntr_idx);
-        fflush(stdout);
-        abort();
-        break;
-    }
-  }
+  void update_shader_stat(unsigned cntr_idx, unsigned active_count);
 //</AliJahan>
 
   void incload_stat() { m_stats->m_num_loadqueued_insn[m_sid]++; }

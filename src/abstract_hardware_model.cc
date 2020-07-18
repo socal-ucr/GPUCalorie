@@ -1172,7 +1172,7 @@ void simt_stack::update(simt_mask_t &thread_done, addr_vector_t &next_pc,
 
   if (warp_diverged) {
     m_gpu->gpgpu_ctx->stats->ptx_file_line_stats_add_warp_divergence(top_pc, 1);
-    update_instr_stats(top_pc, DIVERGENCE_CNTR, 1);//<AliJahan stats>
+    m_gpu->gpgpu_ctx->stats->update_instr_stats(top_pc, DIVERGENCE_CNTR, 1);//<AliJahan stats>
   }
 }
 

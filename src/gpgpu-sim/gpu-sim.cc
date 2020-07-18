@@ -1473,11 +1473,11 @@ void shader_core_ctx::mem_instruction_stats(const warp_inst_t &inst) {
     case global_space:
     case local_space:
       if (inst.is_store()) {
-        update_instr_stats(inst.pc, ST_CNTR, inst.active_count());//<AliJahan stats>
+        m_gpu->gpgpu_ctx->stats->update_instr_stats(inst.pc, ST_CNTR, inst.active_count());//<AliJahan stats>
         m_stats->gpgpu_n_store_insn += active_count;
       }
       else {
-        update_instr_stats(inst.pc, LD_CNTR, inst.active_count());//<AliJahan stats>
+        m_gpu->gpgpu_ctx->stats->update_instr_stats(inst.pc, LD_CNTR, inst.active_count());//<AliJahan stats>
         m_stats->gpgpu_n_load_insn += active_count;
       }
       break;

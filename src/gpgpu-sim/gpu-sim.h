@@ -106,7 +106,7 @@ struct power_config {
       sscanf(gpu_nonlinear_model_config, "%lf:%lf", &gpu_idle_core_power,
              &gpu_min_inc_per_active_sm);
 
-    sscanf(component_epa,"%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
+    sscanf(g_component_epa,"%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
       &decode_epa,&alu_epa,&fp_epa,&dp_epa,&mul32_epa,&sfu_epa,&rf_epa,&l1_epa,&shd_epa,&l2_epa,&dram_epa);
   }
   void reg_options(class OptionParser *opp);
@@ -135,7 +135,7 @@ struct power_config {
   double gpu_min_inc_per_active_sm;
 
   //component energy per access
-  char * component_epa;
+  char * g_component_epa;
   double decode_epa;
   double alu_epa;
   double fp_epa;
@@ -150,6 +150,7 @@ struct power_config {
 };
 
 class thermal_config {
+    public:
     thermal_config() {
     }
     void init ()

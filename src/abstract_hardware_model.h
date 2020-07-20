@@ -568,6 +568,8 @@ class gpgpu_t {
   // Move some cycle core stats here instead of being global
   unsigned long long gpu_sim_cycle;
   unsigned long long gpu_tot_sim_cycle;
+  unsigned long long gpu_sim_time;
+  unsigned long long gpu_tot_sim_time;
 
   void *gpu_malloc(size_t size);
   void *gpu_mallocarray(size_t count);

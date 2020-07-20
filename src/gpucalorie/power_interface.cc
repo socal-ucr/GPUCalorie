@@ -80,7 +80,7 @@ power_interface::power_interface(const gpgpu_sim_config &config)
     }
 }
 
-void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *power_stats) {
+void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *power_stats,double core_period) {
 
     if (g_power_trace_enabled)
         open_files();
@@ -102,15 +102,15 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
        
         //calculate power
        
-        double decode_p = ((double)decode * config.decode_epa * 32.0) / config.core_period;
-        double alu_p = ((double)alu * config.alu_epa) / config.core_period;
-        double fp_p = ((double)fp * config.fp_epa) / config.core_period;
-        double dp_p = ((double)dp * config.dp_epa) / config.core_period;
-        double int_mul32_p = ((double)int_mul32 * config.mul32_epa) / config.core_period;
-        double sfu_p = ((double)sfu * config.sfu_epa) / config.core_period;
-        double nb_rf_p = ((double)nb_rf * config.rf_epa) / config.core_period;
-        double l1_p = ((double)l1 * config.l1_epa) / config.core_period;
-        double shd_mem_p = ((double)shd_mem * config.shd_epa) / config.core_period;
+        double decode_p = ((double)decode * config.decode_epa * 32.0) / core_period;
+        double alu_p = ((double)alu * config.alu_epa) / core_period;
+        double fp_p = ((double)fp * config.fp_epa) / core_period;
+        double dp_p = ((double)dp * config.dp_epa) / core_period;
+        double int_mul32_p = ((double)int_mul32 * config.mul32_epa) / core_period;
+        double sfu_p = ((double)sfu * config.sfu_epa) / core_period;
+        double nb_rf_p = ((double)nb_rf * config.rf_epa) / core_period;
+        double l1_p = ((double)l1 * config.l1_epa) / core_period;
+        double shd_mem_p = ((double)shd_mem * config.shd_epa) / core_period;
 
         vals[SM] = decode_p + alu_p + fp_p + dp_p + int_mul32_p + sfu_p + nb_rf_p + l1_p + shd_mem_p + idle;
 
@@ -125,8 +125,8 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
     unsigned dram = power_stats->get_dram_req();
 
 
-    double l2_p = ((double)l2 * config.l2_epa) / config.l2_period;
-    double dram_p = ((double)dram * config.dram_epa) / config.dram_period;
+    double l2_p = ((double)l2 * config.l2_epa) / core_period;
+    double dram_p = ((double)dram * config.dram_epa) / core_period;
 
     vals[num_shaders] = l2_p + idle;
     vals[num_shaders+1] = (dram_p/3.0) + idle;

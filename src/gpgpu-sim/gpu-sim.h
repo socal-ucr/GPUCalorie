@@ -177,7 +177,9 @@ class thermal_config {
     char *g_flp_block_names;
     bool g_thermal_simulation_enabled;
     bool g_thermal_trace_enabled;
+    bool g_dtm_enabled;
     int g_thermal_trace_zlevel;
+    int g_thermal_ceiling;
     bool g_enable_detailed_3d;
     char *g_thermal_trace_filename;
 
@@ -389,7 +391,6 @@ class gpgpu_sim_config : public power_config,
     m_shader_config.init();
     ptx_set_tex_cache_linesize(m_shader_config.m_L1T_config.get_line_sz());
     m_memory_config.init();
-    init_clock_domains();
     power_config::init();
     thermal_config::init();
     Trace::init();
@@ -425,19 +426,9 @@ class gpgpu_sim_config : public power_config,
 
   bool flush_l1() const { return gpgpu_flush_l1_cache; }
 
-  // clock domains - frequency
-  double core_freq;
-  double icnt_freq;
-  double dram_freq;
-  double l2_freq;
-  double core_period;
-  double icnt_period;
-  double dram_period;
-  double l2_period;
-
+  char *gpgpu_clock_domains;
+  char *gpgpu_core_supported_clocks;
  private:
-  void init_clock_domains(void);
-
   // backward pointer
   class gpgpu_context *gpgpu_ctx;
   bool m_valid;
@@ -455,7 +446,6 @@ class gpgpu_sim_config : public power_config,
   bool gpu_deadlock_detect;
   int gpgpu_frfcfs_dram_sched_queue_size;
   int gpgpu_cflog_interval;
-  char *gpgpu_clock_domains;
   unsigned max_concurrent_kernel;
 
   // visualizer
@@ -620,7 +610,22 @@ class gpgpu_sim : public gpgpu_t {
   class gpgpu_context *gpgpu_ctx;
 
  private:
-  // clocks
+  // clock domains - frequency
+  double core_supported_clocks[18];
+
+  unsigned current_clock_index;
+  double core_freq;
+  double icnt_freq;
+  double dram_freq;
+  double l2_freq;
+  double core_period;
+  double icnt_period;
+  double dram_period;
+  double l2_period;
+
+  void dtm();
+
+  void init_clock_domains(void);
   void reinit_clock_domains(void);
   int next_clock_domain(void);
   void issue_block2core();

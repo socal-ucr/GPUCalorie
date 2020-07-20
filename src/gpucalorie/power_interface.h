@@ -40,7 +40,7 @@
 class power_interface {
     public:
     power_interface(const gpgpu_sim_config &config);
-    void cycle(const gpgpu_sim_config &config, class power_stat_t *power_stats);
+    void cycle(const gpgpu_sim_config &config, class power_stat_t *power_stats,double core_period);
     private:
 
     void open_files();

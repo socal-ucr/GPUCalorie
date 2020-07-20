@@ -32,27 +32,27 @@ gpu_calorie::gpu_calorie(const gpgpu_sim_config &config,const int stat_sample_fr
     g_power_simulation_enabled=config.g_power_simulation_enabled;
     gpu_stat_sample_freq=stat_sample_freq;
     g_power_trace_enabled=config.g_power_trace_enabled;
+    g_dtm_enabled=config.g_dtm_enabled;
     
     if(g_power_simulation_enabled) {
         m_power_interface = new power_interface(config);
         m_hotspot_wrapper = new hotspot_wrapper();
         m_hotspot_wrapper->init(config);
     }
-
 }
 
-void gpu_calorie::cycle(const gpgpu_sim_config &config,class power_stat_t *power_stats, unsigned cycle){
+void gpu_calorie::cycle(const gpgpu_sim_config &config,class power_stat_t *power_stats,double core_period){
 
-    static bool init=true;
+  static bool init=true;
 
-    if(init){ // If first cycle, don't have any power numbers yet
-        init=false;
-        return;
-    }
+  if(init){ // If first cycle, don't have any power numbers yet
+    init=false;
+    return;
+  }
+  m_power_interface->cycle(config,power_stats,core_period);
+  m_hotspot_wrapper->compute(power_stats,core_period*gpu_stat_sample_freq);
+}
 
-    if (cycle % gpu_stat_sample_freq == 0) {
-        m_power_interface->cycle(config,power_stats);
-        m_hotspot_wrapper->compute(power_stats,config.core_period);
-        
-    }
+double gpu_calorie::get_max_chip_temp() {
+  return m_hotspot_wrapper->find_max_temp();
 }

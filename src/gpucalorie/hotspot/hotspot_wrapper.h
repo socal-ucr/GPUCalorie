@@ -50,7 +50,7 @@ public:
     void update_power(class power_stat_t *power_stats);
     void update_temps(double * temps);
     void compute(class power_stat_t *power_stats, double time_elapsed);
-    void ending();
+    double find_max_temp();
 private:
 
     unsigned num_shaders;

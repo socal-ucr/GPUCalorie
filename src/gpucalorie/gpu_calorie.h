@@ -41,7 +41,8 @@
 class gpu_calorie {
     public:
     gpu_calorie(const gpgpu_sim_config &config,const int stat_sample_freq);
-    void cycle(const gpgpu_sim_config &config, class power_stat_t *power_stats, unsigned cycle);
+    void cycle(const gpgpu_sim_config &config, class power_stat_t *power_stats,double core_period);
+    double get_max_chip_temp();
     private:
 
     class power_interface * m_power_interface;
@@ -49,6 +50,7 @@ class gpu_calorie {
 
     bool g_power_simulation_enabled;
     bool g_power_trace_enabled;
+    bool g_dtm_enabled;
     unsigned gpu_stat_sample_freq;
     int num_shaders;
 

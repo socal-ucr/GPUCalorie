@@ -270,23 +270,18 @@ void hotspot_wrapper::compute(class power_stat_t *power_stats,double time_elapse
        }
     
     num_samples++;
-}
 
-
-hotspot_wrapper::ending() {
-
-  /* for computing averag   */
+  /* computing running average   */
+  double avg_power = 0.0;
   if (model->type == BLOCK_MODEL)
     for(i=0; i < num_functional_blocks; i++) {
-        overall_power[i] /= num_samples;
-        total_power += overall_power[i];
+        avg_power += overall_power[i] / num_samples;
     }
   else
     for(i=0, base=0; i < model->grid->n_layers; i++) {
         if(model->grid->layers[i].has_power)
           for(j=0; j < model->grid->layers[i].flp->n_units; j++) {
-              overall_power[base+j] /= num_samples;
-              total_power += overall_power[base+j];
+            avg_power += overall_power[i] / num_samples;
           }
         base += model->grid->layers[i].flp->n_units;	
     }
@@ -297,7 +292,7 @@ hotspot_wrapper::ending() {
       while (!natural_convergence) {
           r_convec_old = model->config->r_convec;
           /* steady state temperature	*/
-          steady_state_temp(model, overall_power, steady_temp);
+          steady_state_temp(model, avg_power, steady_temp);
           avg_sink_temp = calc_sink_temp(model, steady_temp) + SMALL_FOR_CONVEC;
           natural = package_model(model->config, table, size, avg_sink_temp);
           populate_R_model(model, flp);
@@ -308,14 +303,7 @@ hotspot_wrapper::ending() {
       }
   }	else /* natural convection is not used, no need for iterations */
     /* steady state temperature	*/
-    steady_state_temp(model, overall_power, steady_temp);
-
-  /* print steady state results	*/
-  //BU_3D: Only print steady state results to stdout when DEBUG3D flag is not set
-#if DEBUG3D < 1
-  fprintf(stdout, "Unit\tSteady(Kelvin)\n");
-  dump_temp(model, steady_temp, "stdout");
-#endif //end->BU_3D
+    steady_state_temp(model, avg_power, steady_temp);
 
   /* dump steady state temperatures on to file if needed	*/
   if (strcmp(model->config->steady_file, NULLFILE))
@@ -327,24 +315,8 @@ hotspot_wrapper::ending() {
   if (model->type == GRID_MODEL &&
       strcmp(model->config->grid_steady_file, NULLFILE))
     dump_steady_temp_grid(model->grid, model->config->grid_steady_file);
+}
 
-#if VERBOSE > 2
-  if (model->type == BLOCK_MODEL) {
-      if (do_transient) {
-          fprintf(stdout, "printing temp...\n");
-          dump_dvector(temp, model->block->n_nodes);
-      }
-      fprintf(stdout, "printing steady_temp...\n");
-      dump_dvector(steady_temp, model->block->n_nodes);
-  } else {
-      if (do_transient) {
-          fprintf(stdout, "printing temp...\n");
-          dump_dvector(temp, model->grid->total_n_blocks + EXTRA);
-      }
-      fprintf(stdout, "printing steady_temp...\n");
-      dump_dvector(steady_temp, model->grid->total_n_blocks + EXTRA);
-  }
-#endif
- 
-
+double hotspot_wrapper::find_max_temp() {
+  return find_max_temp(model,temp);
 }

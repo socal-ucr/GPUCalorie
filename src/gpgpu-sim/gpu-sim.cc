@@ -125,7 +125,7 @@ void power_config::reg_options(class OptionParser *opp) {
   option_parser_register(opp, "-component_epa", OPT_CSTR,
                          &g_component_epa,
                          "Component Energy per Access coefficients {DECODE,ALU,FP,DP,INT_MUL32,SFU,RF,L1,SHD_MEM,L2,DRAM}",
-                         "2.5e-11,3.42e-11,3.35e-11,6.59e-10,2.313e-09,9.52e-10,6.05e-12,6.15e-11,5.72e-11,6.87e-11,2.17e-10");
+        "2.5e-11,3.42e-11,3.35e-11,6.59e-10,2.313e-09,9.52e-10,6.05e-12,6.15e-11,5.72e-11,6.87e-11,2.17e-10");
 }
 
 void memory_config::reg_options(class OptionParser *opp) {
@@ -252,8 +252,8 @@ void thermal_config::reg_options(class OptionParser * opp)
 
   option_parser_register(opp, "-thermal_ceiling", OPT_INT32,
                            &g_thermal_trace_zlevel,
-                           "thermal ceiling for gpu in Celsius", 
-                           "85");
+                           "thermal ceiling for gpu in Kelvin", 
+                           "358");
 
   option_parser_register(opp, "-thermal_trace_zlevel", OPT_INT32,
                            &g_thermal_trace_zlevel,
@@ -655,10 +655,10 @@ void gpgpu_sim_config::reg_options(option_parser_t opp) {
   option_parser_register(opp, "-gpgpu_core_supported_clocks", OPT_CSTR,
                          &gpgpu_core_supported_clocks,
                          "Core Domain Supported Frequencies {}",
-                         "1809.0,1708.0,1594.0,1506.0,1404.0,"
-                         "1303.0,1202.0,1101.0,999.0,898.0,"
-                         "797.0,696.0,607.0,506.0,405.0,303.0,"
-                         "202.0,139.0");
+                         "1809,1708,1594,1506,1404,"
+                         "1303,1202,1101,999,898,"
+                         "797,696,607,506,405,303,"
+                         "202,139");
   option_parser_register(
       opp, "-gpgpu_max_concurrent_kernel", OPT_INT32, &max_concurrent_kernel,
       "maximum kernels that can run concurrently on GPU", "8");
@@ -1000,14 +1000,18 @@ enum divergence_support_t gpgpu_sim::simd_model() const {
 void gpgpu_sim::init_clock_domains(void) {
   sscanf(m_config.gpgpu_clock_domains, "%lf:%lf:%lf:%lf", &core_freq, &icnt_freq,
          &l2_freq, &dram_freq);
-  char *src;
-  int i = 0;
-
-  src = strtok(m_config.gpgpu_core_supported_clocks,",");
-  while (src!=NULL) {
-    sscanf(src,"%lf",&core_supported_clocks[i]);
-    src = strtok(NULL,",");
-    i++;
+  char *src = m_config.gpgpu_core_supported_clocks;
+  char temp[4];
+  /* chop the names from the line read  */  
+  for(int i = 0; *src && i < 18; i++) {
+    if(!sscanf(src, "%[^,]", temp)){ 
+         fatal("invalid format of names\n"); 
+    }
+    src += strlen(temp);
+    while (ispunct((int)*src))
+      src++;
+         
+    core_supported_clocks[i] = std::stod(temp);
   }
   current_clock_index = 0;
   //GPU BOOST ENABLED

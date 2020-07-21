@@ -48,7 +48,7 @@ public:
 
     void init(const gpgpu_sim_config &config);
     void update_power(class power_stat_t *power_stats);
-    void update_temps(double * temps);
+    void update_temps(class power_stat_t *power_stats, double * vals);
     void compute(class power_stat_t *power_stats, double time_elapsed);
     double find_max_temp();
 private:

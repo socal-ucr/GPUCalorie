@@ -144,8 +144,9 @@ int read_names(char *line, char **names)
 
   /* chop the names from the line read	*/
   for(i=0,src=line; *src && i < MAX_UNITS; i++) {
-      if(!sscanf(src, "%[^,]", names[i]))
+      if(!sscanf(src, "%[^,]", names[i])) {
         fatal("invalid format of names\n");
+      }
       src += strlen(names[i]);
       while (ispunct((int)*src))
         src++;

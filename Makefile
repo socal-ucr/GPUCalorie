@@ -83,11 +83,11 @@ ifneq ($(GPGPUSIM_POWER_MODEL),)
    	LIBS += gpucalorie
 
 	SuperLUroot     = /home/mchow009/superlu/build
-	SUPERLULIB      = $(SuperLUroot)/lib64/libsuperlu.a
+	SUPERLULIB      = $(SuperLUroot)/lib64/libsuperlu.a -Wl,-rpath=$(SuperLUroot)/lib64/
 	BLASLIB         = -L $(SuperLUroot)/lib64 -lblas
 
 	ifeq ($(DEBUG), 1)
-		GPUCALORIE_DBG_FLAG = dbg
+		GPUCALORIE_DBG_FLAG =
 	endif
 
 	GPUCALORIE_OBJ_DIR = $(SIM_OBJ_FILES_DIR)/gpucalorie

@@ -1815,6 +1815,11 @@ class shader_core_stats : public shader_core_stats_pod {
         (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
     //</AliJahan>
 
+    m_sm_power = 
+        (double*) calloc(config->num_shader(),sizeof(double));
+    m_sm_temp = 
+        (double*) calloc(config->num_shader(),sizeof(double));
+
     n_simt_to_mem = (long *)calloc(config->num_shader(), sizeof(long));
     n_mem_to_simt = (long *)calloc(config->num_shader(), sizeof(long));
 

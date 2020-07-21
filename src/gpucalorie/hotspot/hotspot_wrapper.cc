@@ -149,7 +149,7 @@ void hotspot_wrapper::init(const gpgpu_sim_config &config) {
         if (model->type == BLOCK_MODEL)
             num_functional_blocks = model->block->flp->n_units;
         else if (model->type == GRID_MODEL) {
-            for(i=0; i < model->grid->n_layers; i++)
+            for(int i=0; i < model->grid->n_layers; i++)
                 if (model->grid->layers[i].has_power)
                     num_functional_blocks += model->grid->layers[i].flp->n_units;
         } else 
@@ -175,7 +175,7 @@ void hotspot_wrapper::init(const gpgpu_sim_config &config) {
 
 void hotspot_wrapper::update_power(class power_stat_t *power_stats) {
 
-    for(unsigned i =0;i < num_shaders;++)
+    for(unsigned i =0;i < num_shaders;i++)
         vals[i] = power_stats->get_sm_power(i);
 
     vals[num_shaders] = power_stats->get_l2_power();
@@ -185,9 +185,9 @@ void hotspot_wrapper::update_power(class power_stat_t *power_stats) {
     return;
 }
 
-void hotspot_wrapper::update_temps(double *vals) {
+void hotspot_wrapper::update_temps(class power_stat_t *power_stats, double *vals) {
 
-    for(unsigned i =0;i < num_shaders;++)
+    for(unsigned i =0;i < num_shaders;i++)
         power_stats->set_sm_temps(vals[i],i);
 
     power_stats->set_l2_temps(vals[num_shaders]);
@@ -209,7 +209,7 @@ void hotspot_wrapper::compute(class power_stat_t *power_stats,double time_elapse
         for(i=0, base=0, count=0; i < model->grid->n_layers; i++) {
             if(model->grid->layers[i].has_power) {
                 for(j=0; j < model->grid->layers[i].flp->n_units; j++) {
-                    idx = get_blk_index(model->grid->layers[i].flp, names[count+j\]);
+                    idx = get_blk_index(model->grid->layers[i].flp, names[count+j]);
                     power[base+idx] = vals[count+j];
                 }
                 count += model->grid->layers[i].flp->n_units;
@@ -255,11 +255,11 @@ void hotspot_wrapper::compute(class power_stat_t *power_stats,double time_elapse
           /* output instantaneous temperature trace	*/
           write_vals(tout, vals, num_functional_blocks);
 
-          update_temps(vals);
+          update_temps(power_stats,vals);
     }
 
     if (model->type == BLOCK_MODEL) 
-        for(i=0; i < n; i++) 
+        for(i=0; i < num_functional_blocks; i++) 
             overall_power[i] += power[i]; 
     else 
         for(i=0, base=0; i < model->grid->n_layers; i++) { 
@@ -292,7 +292,7 @@ void hotspot_wrapper::compute(class power_stat_t *power_stats,double time_elapse
       while (!natural_convergence) {
           r_convec_old = model->config->r_convec;
           /* steady state temperature	*/
-          steady_state_temp(model, avg_power, steady_temp);
+          steady_state_temp(model, &avg_power, steady_temp);
           avg_sink_temp = calc_sink_temp(model, steady_temp) + SMALL_FOR_CONVEC;
           natural = package_model(model->config, table, size, avg_sink_temp);
           populate_R_model(model, flp);
@@ -303,7 +303,7 @@ void hotspot_wrapper::compute(class power_stat_t *power_stats,double time_elapse
       }
   }	else /* natural convection is not used, no need for iterations */
     /* steady state temperature	*/
-    steady_state_temp(model, avg_power, steady_temp);
+    steady_state_temp(model, &avg_power, steady_temp);
 
   /* dump steady state temperatures on to file if needed	*/
   if (strcmp(model->config->steady_file, NULLFILE))
@@ -318,5 +318,5 @@ void hotspot_wrapper::compute(class power_stat_t *power_stats,double time_elapse
 }
 
 double hotspot_wrapper::find_max_temp() {
-  return find_max_temp(model,temp);
+    return ::find_max_temp(model,temp);
 }

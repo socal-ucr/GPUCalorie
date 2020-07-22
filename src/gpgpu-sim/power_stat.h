@@ -74,6 +74,19 @@ struct shader_core_power_stats_pod {
   unsigned *m_read_regfile_acesses[NUM_STAT_IDX];
   unsigned *m_write_regfile_acesses[NUM_STAT_IDX];
   unsigned *m_non_rf_operands[NUM_STAT_IDX];
+  //<AliJahan/> 
+  unsigned *m_alu_cntr[NUM_STAT_IDX]; 
+  unsigned *m_decode_cntr[NUM_STAT_IDX]; 
+  unsigned *m_fp_cntr[NUM_STAT_IDX];
+  unsigned *m_sp_cntr[NUM_STAT_IDX];
+  unsigned *m_dp_cntr[NUM_STAT_IDX];
+  unsigned *m_imul32_cntr[NUM_STAT_IDX];
+  unsigned *m_sfu_cntr[NUM_STAT_IDX];
+  unsigned *m_rf_cntr[NUM_STAT_IDX]; 
+  //</AliJahan>
+    
+  double *m_sm_power[NUM_STAT_IDX];
+  double *m_sm_temp[NUM_STAT_IDX];
 };
 
 class power_core_stat_t : public shader_core_power_stats_pod {
@@ -93,7 +106,7 @@ class power_core_stat_t : public shader_core_power_stats_pod {
 
 struct mem_power_stats_pod {
   // [CURRENT_STAT_IDX] = CURRENT_STAT_IDX stat, [PREV_STAT_IDX] = last reading
-  class cache_stats core_cache_stats[NUM_STAT_IDX];  // Total core stats
+  class cache_stats *core_cache_stats[NUM_STAT_IDX];  // Total core stats
   class cache_stats l2_cache_stats[NUM_STAT_IDX];    // Total L2 partition stats
 
   unsigned *shmem_read_access[NUM_STAT_IDX];  // Shared memory access
@@ -111,6 +124,12 @@ struct mem_power_stats_pod {
   // Interconnect stats
   long *n_simt_to_mem[NUM_STAT_IDX];
   long *n_mem_to_simt[NUM_STAT_IDX];
+
+  double m_l2_power[NUM_STAT_IDX];
+  double m_dram_power[NUM_STAT_IDX];
+
+  double m_l2_temp[NUM_STAT_IDX];
+  double m_dram_temp[NUM_STAT_IDX];
 };
 
 class power_mem_stat_t : public mem_power_stats_pod {
@@ -135,7 +154,7 @@ class power_stat_t {
   power_stat_t(const shader_core_config *shader_config,
                float *average_pipeline_duty_cycle, float *active_sms,
                shader_core_stats *shader_stats, const memory_config *mem_config,
-               memory_stats_t *memory_stats);
+  memory_stats_t *memory_stats);
   void visualizer_print(gzFile visualizer_file);
   void print(FILE *fout) const;
   void save_stats() {
@@ -144,6 +163,125 @@ class power_stat_t {
     *m_average_pipeline_duty_cycle = 0;
     *m_active_sms = 0;
   }
+
+
+  void update_power(double * vals) {
+    for(unsigned i=0; i<m_config->num_shader(); ++i) {
+	pwr_core_stat->m_sm_power[CURRENT_STAT_IDX][i] = vals[i];
+    }
+    pwr_mem_stat->m_l2_power[CURRENT_STAT_IDX] = vals[m_config->num_shader()];
+    pwr_mem_stat->m_dram_power[CURRENT_STAT_IDX] = vals[m_config->num_shader()+1];
+  }
+
+  double get_sm_power(unsigned shader_id) {
+    assert(shader_id<m_config->num_shader());
+    return pwr_core_stat->m_sm_power[CURRENT_STAT_IDX][shader_id];
+  }
+  double get_l2_power() {
+    return pwr_mem_stat->m_l2_power[CURRENT_STAT_IDX];
+  }
+  double get_dram_power() {
+    return pwr_mem_stat->m_dram_power[CURRENT_STAT_IDX];
+  }
+
+  void set_sm_temps(double temp,unsigned shader_id) {
+    assert(shader_id<m_config->num_shader());
+    pwr_core_stat->m_sm_temp[CURRENT_STAT_IDX][shader_id] = temp;
+  }
+  double set_l2_temps(double temp) {
+    pwr_mem_stat->m_l2_power[CURRENT_STAT_IDX] = temp;
+  }
+  double set_dram_temps(double temp) {
+    pwr_mem_stat->m_dram_power[CURRENT_STAT_IDX] = temp;
+  }
+  //<AliJahan/>
+  unsigned get_tot_alu_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_alu_cntr[CURRENT_STAT_IDX][shader_id]) -
+           (pwr_core_stat->m_alu_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_decode_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_decode_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_decode_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_fp_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_fp_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_fp_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_sp_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_sp_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_sp_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_dp_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_dp_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_dp_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_imul32_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_imul32_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_imul32_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_sfu_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_sfu_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_sfu_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_tot_rf_accessess(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return (pwr_core_stat->m_rf_cntr[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_rf_cntr[PREV_STAT_IDX][shader_id]);
+  }
+  unsigned get_total_inst(unsigned shader_id){
+    assert(shader_id<m_config->num_shader());
+    return(pwr_core_stat->m_num_decoded_insn[CURRENT_STAT_IDX][shader_id]) - (pwr_core_stat->m_num_decoded_insn[PREV_STAT_IDX][shader_id]);
+  }
+
+  unsigned get_l1d_read_accesses(unsigned shader){
+    enum mem_access_type access_type[] = {GLOBAL_ACC_R, LOCAL_ACC_R};
+    enum cache_request_status request_status[] = {HIT, MISS, HIT_RESERVED};
+    unsigned num_access_type = sizeof(access_type)/sizeof(enum mem_access_type);
+    unsigned num_request_status = sizeof(request_status)/sizeof(enum cache_request_status);
+
+    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(access_type, num_access_type, request_status, num_request_status)) -
+            (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(access_type, num_access_type, request_status, num_request_status));
+  }
+  unsigned get_l1d_read_misses(unsigned shader){
+    enum mem_access_type access_type[] = {GLOBAL_ACC_R, LOCAL_ACC_R};
+    enum cache_request_status request_status[] = {MISS};
+    unsigned num_access_type = sizeof(access_type)/sizeof(enum mem_access_type);
+    unsigned num_request_status = sizeof(request_status)/sizeof(enum cache_request_status);
+
+    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(access_type, num_access_type, request_status, num_request_status)) -
+            (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(access_type, num_access_type, request_status, num_request_status));
+  }
+  unsigned get_l1d_read_hits(unsigned shader){
+    return (get_l1d_read_accesses(shader)-get_l1d_read_misses(shader));
+  }
+  unsigned get_l1d_write_accesses(unsigned shader){
+    enum mem_access_type access_type[] = {GLOBAL_ACC_W, LOCAL_ACC_W};
+    enum cache_request_status request_status[] = {HIT, MISS, HIT_RESERVED};
+    unsigned num_access_type = sizeof(access_type)/sizeof(enum mem_access_type);
+    unsigned num_request_status = sizeof(request_status)/sizeof(enum cache_request_status);
+
+    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(access_type, num_access_type, request_status, num_request_status)) -
+            (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(access_type, num_access_type, request_status, num_request_status));
+  }
+  unsigned get_l1d_write_misses(unsigned shader){
+    enum mem_access_type access_type[] = {GLOBAL_ACC_W, LOCAL_ACC_W};
+    enum cache_request_status request_status[] = {MISS};
+    unsigned num_access_type = sizeof(access_type)/sizeof(enum mem_access_type);
+    unsigned num_request_status = sizeof(request_status)/sizeof(enum cache_request_status);
+
+    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(access_type, num_access_type, request_status, num_request_status)) -
+            (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(access_type, num_access_type, request_status, num_request_status));
+  }
+  unsigned get_l1d_write_hits(unsigned shader){
+    return (get_l1d_write_accesses(shader)-get_l1d_write_misses(shader));
+  }
+  unsigned get_l1d_hits(unsigned shader) {
+    return (get_l1d_write_hits(shader) + get_l1d_read_hits(shader));
+  }
+  unsigned get_shmem_read_access(unsigned shader){
+    return (pwr_mem_stat->shmem_read_access[CURRENT_STAT_IDX][shader]) - (pwr_mem_stat->shmem_read_access[PREV_STAT_IDX][shader]);
+  }
+  //</AliJahan>
 
   unsigned get_total_inst() {
     unsigned total_inst = 0;
@@ -433,12 +571,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_constant_c_misses() {
     enum mem_access_type access_type[] = {CONST_ACC_R};
@@ -448,12 +588,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_constant_c_hits() {
     return (get_constant_c_accesses() - get_constant_c_misses());
@@ -466,12 +608,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_texture_c_misses() {
     enum mem_access_type access_type[] = {TEXTURE_ACC_R};
@@ -481,12 +625,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_texture_c_hits() {
     return (get_texture_c_accesses() - get_texture_c_misses());
@@ -499,12 +645,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_inst_c_misses() {
     enum mem_access_type access_type[] = {INST_ACC_R};
@@ -514,12 +662,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_inst_c_hits() {
     return (get_inst_c_accesses() - get_inst_c_misses());
@@ -533,12 +683,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_l1d_read_misses() {
     enum mem_access_type access_type[] = {GLOBAL_ACC_R, LOCAL_ACC_R};
@@ -548,12 +700,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_l1d_read_hits() {
     return (get_l1d_read_accesses() - get_l1d_read_misses());
@@ -566,12 +720,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_l1d_write_misses() {
     enum mem_access_type access_type[] = {GLOBAL_ACC_W, LOCAL_ACC_W};
@@ -581,12 +737,14 @@ class power_stat_t {
     unsigned num_request_status =
         sizeof(request_status) / sizeof(enum cache_request_status);
 
-    return (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status)) -
-           (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX].get_stats(
-               access_type, num_access_type, request_status,
-               num_request_status));
+    unsigned total_access = 0;
+    for(unsigned shader = 0; shader < m_config->num_shader(); shader++) {
+      total_access += (pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status)) -
+                      (pwr_mem_stat->core_cache_stats[PREV_STAT_IDX][shader].get_stats(
+                       access_type, num_access_type, request_status, num_request_status));
+    }
+    return total_access;
   }
   unsigned get_l1d_write_hits() {
     return (get_l1d_write_accesses() - get_l1d_write_misses());

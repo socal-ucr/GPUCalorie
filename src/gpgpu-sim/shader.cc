@@ -856,6 +856,7 @@ void shader_core_ctx::decode() {
     m_warp[m_inst_fetch_buffer.m_warp_id]->ibuffer_fill(0, pI1);
     m_warp[m_inst_fetch_buffer.m_warp_id]->inc_inst_in_pipeline();
     if (pI1) {
+      update_shader_stat(DECODE_CNTR, 1);//<AliJahan stats>
       m_stats->m_num_decoded_insn[m_sid]++;
       if (pI1->oprnd_type == INT_OP) {
         m_stats->m_num_INTdecoded_insn[m_sid]++;
@@ -865,6 +866,7 @@ void shader_core_ctx::decode() {
       const warp_inst_t *pI2 =
           get_next_inst(m_inst_fetch_buffer.m_warp_id, pc + pI1->isize);
       if (pI2) {
+      update_shader_stat(DECODE_CNTR, 1);//<AliJahan stats>
         m_warp[m_inst_fetch_buffer.m_warp_id]->ibuffer_fill(1, pI2);
         m_warp[m_inst_fetch_buffer.m_warp_id]->inc_inst_in_pipeline();
         m_stats->m_num_decoded_insn[m_sid]++;
@@ -3007,6 +3009,15 @@ void shader_core_ctx::incexecstat(warp_inst_t *&inst) {
     default:
       break;
   }
+
+  //<AliJahan/>
+  counters_mask_t counters_mask = inst->get_counters_mask();
+  for(unsigned int i = 0; i<NEEDED_CNTR_SIZE ; i++){
+    if(counters_mask.test(i)){
+      update_shader_stat(i,inst->active_count());
+    }
+  }
+  //</AliJahan>
 }
 void shader_core_ctx::print_stage(unsigned int stage, FILE *fout) const {
   m_pipeline_reg[stage].print(fout);
@@ -3193,6 +3204,46 @@ void shader_core_ctx::display_pipeline(FILE *fout, int print_mem,
   }
 }
 
+void shader_core_ctx::update_shader_stat(unsigned cntr_idx, unsigned active_count){
+  switch (cntr_idx){
+    case ALU_CNTR: //0
+      m_stats->m_alu_cntr[m_sid]=m_stats->m_alu_cntr[m_sid]+1;//+active_count;
+      break;
+    case SP_CNTR: //2
+      m_stats->m_sp_cntr[m_sid]=m_stats->m_sp_cntr[m_sid]+1;//+active_count;
+      break;
+    case FP_CNTR: //1
+      m_stats->m_fp_cntr[m_sid]=m_stats->m_fp_cntr[m_sid]+1;//+active_count;
+      break;
+    case DP_CNTR: //3
+      m_stats->m_dp_cntr[m_sid]=m_stats->m_dp_cntr[m_sid]+1;//+active_count;
+      break;
+    case LG_CNTR: //6
+    case EXP_CNTR: //7
+    case RCP_CNTR: //8
+    case SQRT_CNTR: //9
+    case SFU_CNTR: //12
+      m_stats->m_sfu_cntr[m_sid]=m_stats->m_sfu_cntr[m_sid]+1;//+active_count;
+      break;
+    case RF_RD_CNTR: //10
+      m_stats->m_rf_cntr[m_sid]=m_stats->m_rf_cntr[m_sid]+1;//+active_count;
+      break;
+    case RF_WR_CNTR: //11
+      m_stats->m_rf_cntr[m_sid]=m_stats->m_rf_cntr[m_sid]+1;//+active_count;
+      break;
+    case INT_MUL32_CNTR: //4
+      m_stats->m_imul32_cntr[m_sid]=m_stats->m_imul32_cntr[m_sid]+1;//+active_count;
+      break;
+    case DECODE_CNTR: //13
+      m_stats->m_decode_cntr[m_sid]=m_stats->m_decode_cntr[m_sid]+1;//+active_count;
+      break;
+    default:
+      printf("shader.h:%d counter with index %d is not supported\n",__LINE__, cntr_idx);
+      fflush(stdout);
+      abort();
+      break;
+    }
+}
 unsigned int shader_core_config::max_cta(const kernel_info_t &k) const {
   unsigned threads_per_cta = k.threads_per_cta();
   const class function_info *kernel = k.entry();
@@ -3924,9 +3975,11 @@ bool opndcoll_rfu_t::writeback(warp_inst_t &inst) {
         }
       }
       m_shader->incregfile_writes(active_count);
+      m_shader->update_shader_stat(RF_WR_CNTR, active_count);//<AliJahan>
     } else {
       m_shader->incregfile_writes(
           m_shader->get_config()->warp_size);  // inst.active_count());
+          m_shader->update_shader_stat(RF_WR_CNTR, m_shader->get_config()->warp_size);//<AliJahan>
     }
   }
   return true;
@@ -4020,9 +4073,11 @@ void opndcoll_rfu_t::allocate_reads() {
         }
       }
       m_shader->incregfile_reads(active_count);
+      m_shader->update_shader_stat(RF_RD_CNTR, active_count);//<AliJahan>
     } else {
       m_shader->incregfile_reads(
           m_shader->get_config()->warp_size);  // op.get_active_count());
+          m_shader->update_shader_stat(RF_RD_CNTR, m_shader->get_config()->warp_size);//<AliJahan>
     }
   }
 }
@@ -4381,6 +4436,10 @@ void simt_core_cluster::get_icnt_stats(long &n_simt_to_mem,
   }
   n_simt_to_mem = simt_to_mem;
   n_mem_to_simt = mem_to_simt;
+}
+
+void simt_core_cluster::get_cache_stats(unsigned shader, cache_stats &cs) const {
+  m_core[shader]->get_cache_stats(cs);
 }
 
 void simt_core_cluster::get_cache_stats(cache_stats &cs) const {

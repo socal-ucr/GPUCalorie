@@ -105,6 +105,9 @@ struct power_config {
     if (g_use_nonlinear_model)
       sscanf(gpu_nonlinear_model_config, "%lf:%lf", &gpu_idle_core_power,
              &gpu_min_inc_per_active_sm);
+
+    sscanf(g_component_epa,"%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
+      &decode_epa,&alu_epa,&fp_epa,&dp_epa,&mul32_epa,&sfu_epa,&rf_epa,&l1_epa,&shd_epa,&l2_epa,&dram_epa);
   }
   void reg_options(class OptionParser *opp);
 
@@ -130,7 +133,59 @@ struct power_config {
   char *gpu_nonlinear_model_config;
   double gpu_idle_core_power;
   double gpu_min_inc_per_active_sm;
+
+  //component energy per access
+  char * g_component_epa;
+  double decode_epa;
+  double alu_epa;
+  double fp_epa;
+  double dp_epa;
+  double mul32_epa;
+  double sfu_epa;
+  double rf_epa;
+  double l1_epa;
+  double shd_epa;
+  double l2_epa;
+  double dram_epa;
 };
+
+class thermal_config {
+  public:
+  thermal_config() {
+  }
+  void init ()
+  {
+      // initialize file name if it is not set
+      time_t curr_time;
+      time(&curr_time);
+      char *date = ctime(&curr_time);
+      char *s = date;
+      while (*s) {
+          if (*s == ' ' || *s == '\t' || *s == ':') *s = '-';
+          if (*s == '\n' || *s == '\r' ) *s = 0;
+          s++;
+      }
+      char buf1[1024];
+      snprintf(buf1,1024,"gpgpusim_thermal_trace__%s.log.gz",date);
+      g_thermal_trace_filename = strdup(buf1);
+  }
+
+  void reg_options(class OptionParser * opp);
+
+  char *g_floorplan_input_file;
+  char *g_thermal_config_file;
+  char *g_flp_block_names;
+  bool g_thermal_simulation_enabled;
+  bool g_thermal_trace_enabled;
+  bool g_dtm_enabled;
+  int g_thermal_trace_zlevel;
+  int g_thermal_ceiling;
+  bool g_enable_detailed_3d;
+  char *g_thermal_trace_filename;
+
+};
+
+
 
 class memory_config {
  public:
@@ -321,6 +376,7 @@ class memory_config {
 extern bool g_interactive_debugger_enabled;
 
 class gpgpu_sim_config : public power_config,
+			 public thermal_config,
                          public gpgpu_functional_sim_config {
  public:
   gpgpu_sim_config(gpgpu_context *ctx)
@@ -339,6 +395,7 @@ class gpgpu_sim_config : public power_config,
     m_memory_config.init();
     init_clock_domains();
     power_config::init();
+    thermal_config::init();
     Trace::init();
 
     // initialize file name if it is not set
@@ -372,6 +429,9 @@ class gpgpu_sim_config : public power_config,
 
   bool flush_l1() const { return gpgpu_flush_l1_cache; }
 
+  char *gpgpu_clock_domains;
+  char *gpgpu_core_supported_clocks;
+
  private:
   void init_clock_domains(void);
 
@@ -401,7 +461,6 @@ class gpgpu_sim_config : public power_config,
   bool gpu_deadlock_detect;
   int gpgpu_frfcfs_dram_sched_queue_size;
   int gpgpu_cflog_interval;
-  char *gpgpu_clock_domains;
   unsigned max_concurrent_kernel;
 
   // visualizer
@@ -504,6 +563,7 @@ class gpgpu_sim : public gpgpu_t {
   }
   void print_stats();
   void update_stats();
+  void print_heatmap();
   void deadlock_check();
   void inc_completed_cta() { gpu_completed_cta++; }
   void get_pdom_stack_top_info(unsigned sid, unsigned tid, unsigned *pc,
@@ -614,6 +674,8 @@ class gpgpu_sim : public gpgpu_t {
   const struct cudaDeviceProp *m_cuda_properties;
   const shader_core_config *m_shader_config;
   const memory_config *m_memory_config;
+
+  class gpu_calorie * m_gpu_calorie;
 
   // stats
   class shader_core_stats *m_shader_stats;

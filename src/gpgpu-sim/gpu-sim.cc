@@ -66,11 +66,7 @@
 #include "stats.h"
 #include "visualizer.h"
 
-#ifdef GPGPUSIM_POWER_MODEL
-#include "power_interface.h"
-#else
-class gpgpu_sim_wrapper {};
-#endif
+#include "gpu_calorie.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -126,7 +122,61 @@ void power_config::reg_options(class OptionParser *opp) {
   option_parser_register(opp, "-steady_state_definition", OPT_CSTR,
                          &gpu_steady_state_definition,
                          "allowed deviation:number of samples", "8:4");
+
+  option_parser_register(opp, "-component_epa", OPT_CSTR,
+                         &g_component_epa,
+                         "Component Energy per Access coefficients "
+                         "{DECODE,ALU,FP,DP,INT_MUL32,SFU,RF,L1,SHD_MEM,L2,DRAM}",
+                         "2.5e-11,3.42e-11,3.35e-11,6.59e-10,2.313e-09,"
+                         "9.52e-10,6.05e-12,6.15e-11,5.72e-11,6.87e-11,2.17e-10");
 }
+void thermal_config::reg_options(class OptionParser * opp)                                                                
+{                                                                                                                         
+option_parser_register(opp, "-floorplan_input_file", OPT_CSTR,                                                          
+                           &g_floorplan_input_file,                                                                       
+                           "Hotspot floorplan .flp file",                                                                 
+                           "hotspot.flp");                                                                                
+                                                                                                                          
+  option_parser_register(opp, "-thermal_config_file", OPT_CSTR,                                                           
+                           &g_thermal_config_file,                                                                        
+                           "Hotspot config file",                                                                         
+                           "hotspot.config");                                                                             
+                                                                                                                          
+  option_parser_register(opp, "-flp_block_names", OPT_CSTR,                                                               
+                           &g_flp_block_names,                                                                            
+                           "flp_block_names",                                                                             
+                           "SM0,SM1,SM2,SM3,SM4,SM5,L2,MC1,MC2,MC3");                                                     
+                                                                                                                          
+  option_parser_register(opp, "-thermal_simulation_enabled", OPT_BOOL,                                                    
+                           &g_thermal_simulation_enabled,                                                                 
+                           "Turn on power simulator (1=On, 0=Off)",                                                       
+                           "0");                                                                                          
+    // Output Data Formats                                                                                                
+  option_parser_register(opp, "-thermal_trace_enabled", OPT_BOOL,                                                         
+                           &g_thermal_trace_enabled,                                                                      
+                           "produce a file for the thermal trace (1=On, 0=Off)",                                          
+                           "0");                                                                                          
+                                                                                                                          
+  option_parser_register(opp, "-dtm_enabled", OPT_BOOL,                                                                   
+                           &g_dtm_enabled,                                                                                
+                           "enable dynamic thermal management(1=On, 0=Off)",                                              
+                           "0");                                                                                          
+                                                                                                                    
+  option_parser_register(opp, "-thermal_ceiling", OPT_INT32,                                                              
+                           &g_thermal_trace_zlevel,                                                                       
+                           "thermal ceiling for gpu in Kelvin",                                                           
+                           "358");                                                                                        
+                                                                                                                          
+  option_parser_register(opp, "-thermal_trace_zlevel", OPT_INT32,                                                         
+                           &g_thermal_trace_zlevel,                                                                       
+                           "Compression level of the power trace output log (0=no comp, 9=highest)",                      
+                           "6");                                                                                          
+                                                                                                                     
+  option_parser_register(opp, "-enable_detailed_3d", OPT_BOOL,                                                            
+                           &g_enable_detailed_3d,                                                                         
+                           "enable 3d simulation",                                                                        
+                           "0");                                                                                          
+}          
 
 void memory_config::reg_options(class OptionParser *opp) {
   option_parser_register(opp, "-gpgpu_perf_sim_memcpy", OPT_BOOL,
@@ -553,6 +603,7 @@ void gpgpu_sim_config::reg_options(option_parser_t opp) {
   m_shader_config.reg_options(opp);
   m_memory_config.reg_options(opp);
   power_config::reg_options(opp);
+  thermal_config::reg_options(opp);
   option_parser_register(opp, "-gpgpu_max_cycle", OPT_INT64, &gpu_max_cycle_opt,
                          "terminates gpu simulation early (0 = no limit)", "0");
   option_parser_register(opp, "-gpgpu_max_insn", OPT_INT64, &gpu_max_insn_opt,
@@ -825,8 +876,7 @@ gpgpu_sim::gpgpu_sim(const gpgpu_sim_config &config, gpgpu_context *ctx)
   ptx_file_line_stats_create_exposed_latency_tracker(m_config.num_shader());
 
 #ifdef GPGPUSIM_POWER_MODEL
-  m_gpgpusim_wrapper = new gpgpu_sim_wrapper(config.g_power_simulation_enabled,
-                                             config.g_power_config_name);
+  m_gpu_calorie = new gpu_calorie(m_config,m_config.gpu_stat_sample_freq);
 #endif
 
   m_shader_stats = new shader_core_stats(m_shader_config);
@@ -1027,13 +1077,6 @@ void gpgpu_sim::init() {
 
   if (g_network_mode) icnt_init();
 
-    // McPAT initialization function. Called on first launch of GPU
-#ifdef GPGPUSIM_POWER_MODEL
-  if (m_config.g_power_simulation_enabled) {
-    init_mcpat(m_config, m_gpgpusim_wrapper, m_config.gpu_stat_sample_freq,
-               gpu_tot_sim_insn, gpu_sim_insn);
-  }
-#endif
 }
 
 void gpgpu_sim::update_stats() {
@@ -1072,6 +1115,12 @@ void gpgpu_sim::print_stats() {
         "----------------------------END-of-Interconnect-DETAILS---------------"
         "----------\n");
   }
+}
+
+void gpgpu_sim::print_heatmap() {
+  printf("HEATMAP\n");
+  fflush(stdout);
+  m_gpu_calorie->print_heatmap();
 }
 
 void gpgpu_sim::deadlock_check() {
@@ -1315,14 +1364,6 @@ void gpgpu_sim::gpu_print_stat() {
   shader_print_scheduler_stat(stdout, false);
 
   m_shader_stats->print(stdout);
-#ifdef GPGPUSIM_POWER_MODEL
-  if (m_config.g_power_simulation_enabled) {
-    m_gpgpusim_wrapper->print_power_kernel_stats(
-        gpu_sim_cycle, gpu_tot_sim_cycle, gpu_tot_sim_insn + gpu_sim_insn,
-        kernel_info_str, true);
-    mcpat_reset_perf_count(m_gpgpusim_wrapper);
-  }
-#endif
 
   // performance counter that are not local to one shader
   m_memory_stats->memlatstat_print(m_memory_config->m_n_mem,
@@ -1382,13 +1423,6 @@ void gpgpu_sim::gpu_print_stat() {
     StatDisp(gpgpu_ctx->func_sim->g_inst_op_classification_stat
                  [gpgpu_ctx->func_sim->g_ptx_kernel_count]);
   }
-
-#ifdef GPGPUSIM_POWER_MODEL
-  if (m_config.g_power_simulation_enabled) {
-    m_gpgpusim_wrapper->detect_print_steady_state(
-        1, gpu_tot_sim_insn + gpu_sim_insn);
-  }
-#endif
 
   // Interconnect power stat print
   long total_simt_to_mem = 0;
@@ -1824,7 +1858,9 @@ void gpgpu_sim::cycle() {
 
   if (clock_mask & CORE) {
     // L1 cache + shader core pipeline stages
-    m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX].clear();
+    for (unsigned i=0;i<m_shader_config->num_shader();i++)
+      m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][i].clear();
+
     for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++) {
       if (m_cluster[i]->get_not_completed() || get_more_cta_left()) {
         m_cluster[i]->core_cycle();
@@ -1834,8 +1870,11 @@ void gpgpu_sim::cycle() {
       m_cluster[i]->get_icnt_stats(
           m_power_stats->pwr_mem_stat->n_simt_to_mem[CURRENT_STAT_IDX][i],
           m_power_stats->pwr_mem_stat->n_mem_to_simt[CURRENT_STAT_IDX][i]);
-      m_cluster[i]->get_cache_stats(
-          m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX]);
+      for (unsigned shader = 0;shader< m_shader_config->n_simt_cores_per_cluster;shader++) {
+           unsigned smid = (i*m_shader_config->n_simt_cores_per_cluster) + shader;
+           m_cluster[i]->get_cache_stats(shader,
+           m_power_stats->pwr_mem_stat->core_cache_stats[CURRENT_STAT_IDX][smid]);
+      }
       m_cluster[i]->get_current_occupancy(
           gpu_occupancy.aggregate_warp_slot_filled,
           gpu_occupancy.aggregate_theoretical_warp_slots);
@@ -1859,12 +1898,13 @@ void gpgpu_sim::cycle() {
 
       // McPAT main cycle (interface with McPAT)
 #ifdef GPGPUSIM_POWER_MODEL
-    if (m_config.g_power_simulation_enabled) {
-      mcpat_cycle(m_config, getShaderCoreConfig(), m_gpgpusim_wrapper,
-                  m_power_stats, m_config.gpu_stat_sample_freq,
-                  gpu_tot_sim_cycle, gpu_sim_cycle, gpu_tot_sim_insn,
-                  gpu_sim_insn);
-    }
+  if(m_config.g_power_simulation_enabled &&
+    (!((gpu_tot_sim_cycle + gpu_sim_cycle) % m_config.gpu_stat_sample_freq))) {
+       m_gpu_calorie->cycle(m_config, m_power_stats,m_config.core_period);
+      // if(m_config.g_dtm_enabled) {
+      //     dtm();
+      //  }
+  }
 #endif
 
     issue_block2core();

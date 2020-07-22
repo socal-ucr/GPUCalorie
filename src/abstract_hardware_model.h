@@ -166,6 +166,50 @@ enum _memory_op_t { no_memory_op = 0, memory_load, memory_store };
 #if !defined(__VECTOR_TYPES_H__)
 #include "vector_types.h"
 #endif
+
+//<AliJahan/>
+enum counters_t {
+   //Used counters
+   ALU_CNTR=0,         //SP Integer Unit
+   FP_CNTR=1,          //SP FP Unit
+   SP_CNTR,            //SP Unit (inculding Int and FP)
+   DP_CNTR,            //DP FP Unit
+   INT_MUL32_CNTR,     //SP Integer MAD Unit
+   SIN_CNTR,           //SIN COS Unit
+   LG_CNTR,            //
+   EXP_CNTR,           //
+   RCP_CNTR,           //
+   SQRT_CNTR,          //
+   RF_RD_CNTR,         //
+   RF_WR_CNTR,         //
+   SFU_CNTR,
+   DECODE_CNTR,
+   NEEDED_CNTR_SIZE,
+   ///Other counters
+   IC_HIT_CNTR,
+   IC_MISS_CNTR,
+   DC_L1_LD_CNTR,
+   DC_L1_ST_CNTR,
+   LD_CNTR,
+   ST_CNTR,
+   TEX_CNTR,
+   INT_CNTR,
+   COLL_UNT_CNTR,
+   TENSOR_CNTR,
+   NON_RF_OPRND_CNTR,
+   DIVERGENCE_CNTR,
+   LOCAL_MEM_RD_CNTR,
+   LOCAL_MEM_WR_CNTR,
+   GLOB_MEM_RD_CNTR,
+   GLOB_MEM_WR_CNTR,
+   TEX_MEM_CNTR,
+   CONST_MEM_CNTR,
+   COUNTERS_SIZE
+};
+typedef std::bitset<COUNTERS_SIZE> counters_mask_t;
+//<AliJahan/>
+
+
 struct dim3comp {
   bool operator()(const dim3 &a, const dim3 &b) const {
     if (a.z < b.z)
@@ -894,6 +938,7 @@ class inst_t {
     pc = (address_type)-1;
     reconvergence_pc = (address_type)-1;
     op = NO_OP;
+    counters_mask.reset();  //<AliJahan>
     bar_type = NOT_BAR;
     red_type = NOT_RED;
     bar_id = (unsigned)-1;
@@ -940,6 +985,15 @@ class inst_t {
   address_type pc;  // program counter address of instruction
   unsigned isize;   // size of instruction in bytes
   op_type op;       // opcode (uarch visible)
+
+  //<AliJahan/>
+  counters_mask_t counters_mask;
+  const counters_mask_t & get_counters_mask() const
+  {
+    return counters_mask;
+  }
+  //</AliJahan>
+
 
   barrier_type bar_type;
   reduction_type red_type;

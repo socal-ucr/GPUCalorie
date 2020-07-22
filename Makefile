@@ -76,20 +76,21 @@ else
 endif
 	TARGETS += cuobjdump_to_ptxplus/cuobjdump_to_ptxplus
 
-MCPAT=
-MCPAT_OBJ_DIR=
-MCPAT_DBG_FLAG=
+GPUCALORIE=
+GPUCALORIE_OBJ_DIR=
+GPUCALORIE_DBG_FLAG=
 ifneq ($(GPGPUSIM_POWER_MODEL),)
-	LIBS += mcpat
+	LIBS += gpucalorie
 
 
 	ifeq ($(DEBUG), 1)
-		MCPAT_DBG_FLAG = dbg
+		GPUCALORIE_DBG_FLAG =
 	endif
 
-	MCPAT_OBJ_DIR = $(SIM_OBJ_FILES_DIR)/gpuwattch
+	GPUCALORIE_OBJ_DIR = $(SIM_OBJ_FILES_DIR)/gpucalorie
+	HOTSPOT_OBJ_DIR = $(SIM_OBJ_FILES_DIR)/gpucalorie/hotspot
 
-	MCPAT = $(MCPAT_OBJ_DIR)/*.o
+	GPUCALORIE = $(HOTSPOT_OBJ_DIR)/*.o $(GPUCALORIE_OBJ_DIR)/*.o 
 endif
 
 
@@ -117,24 +118,23 @@ check_setup_environment:
 	 fi 
 
 check_power:
-	@if [ -d "$(GPGPUSIM_ROOT)/src/gpuwattch/" -a ! -n "$(GPGPUSIM_POWER_MODEL)" ]; then \
+	@if [ -d "$(GPGPUSIM_ROOT)/src/gpucalorie/" -a ! -n "$(GPGPUSIM_POWER_MODEL)" ]; then \
 		echo ""; \
-		echo "	Power model detected in default directory ($(GPGPUSIM_ROOT)/src/gpuwattch) but GPGPUSIM_POWER_MODEL not set."; \
-		echo "	Please re-run setup_environment or manually set GPGPUSIM_POWER_MODEL to the gpuwattch directory if you would like to include the GPGPU-Sim Power Model."; \
+		echo "	Power model detected in default directory ($(GPGPUSIM_ROOT)/src/gpucalorie) but GPGPUSIM_POWER_MODEL not set."; \
+		echo "	Please re-run setup_environment or manually set GPGPUSIM_POWER_MODEL to the gpucalorie directory if you would like to include the GPGPU-Sim Power Model."; \
 		echo ""; \
 		true; \
 	elif [ ! -d "$(GPGPUSIM_POWER_MODEL)" ]; then \
 		echo ""; \
 		echo "ERROR ** Power model directory invalid."; \
 		echo "($(GPGPUSIM_POWER_MODEL)) is not a valid directory."; \
-		echo "Please set GPGPUSIM_POWER_MODEL to the GPGPU-Sim gpuwattch directory."; \
+		echo "Please set GPGPUSIM_POWER_MODEL to the GPGPU-Sim gpucalorie directory."; \
 		echo ""; \
 		exit 101; \
-	elif [ -n "$(GPGPUSIM_POWER_MODEL)" -a ! -f "$(GPGPUSIM_POWER_MODEL)/gpgpu_sim.verify" ]; then \
+	elif [ -n "$(GPGPUSIM_POWER_MODEL)"]; then \
 		echo ""; \
 		echo "ERROR ** Power model directory invalid."; \
-		echo "gpgpu_sim.verify not found in $(GPGPUSIM_POWER_MODEL)."; \
-		echo "Please ensure that GPGPUSIM_POWER_MODEL points to a valid gpuwattch directory and that you have the correct GPGPU-Sim mcpat distribution."; \
+		echo "Please ensure that GPGPUSIM_POWER_MODEL points to a valid gpucalorie directory"; \
 		echo ""; \
 		exit 102; \
 	fi
@@ -150,7 +150,7 @@ $(SIM_LIB_DIR)/libcudart.so: makedirs $(LIBS) cudalib
 			$(SIM_OBJ_FILES_DIR)/gpgpu-sim/*.o \
 			$(SIM_OBJ_FILES_DIR)/$(INTERSIM)/*.o \
 			$(SIM_OBJ_FILES_DIR)/*.o -lm -lz -lGL -pthread \
-			$(MCPAT) \
+			$(GPUCALORIE) \
 			-o $(SIM_LIB_DIR)/libcudart.so
 	if [ ! -f $(SIM_LIB_DIR)/libcudart.so.2 ]; then ln -s libcudart.so $(SIM_LIB_DIR)/libcudart.so.2; fi
 	if [ ! -f $(SIM_LIB_DIR)/libcudart.so.3 ]; then ln -s libcudart.so $(SIM_LIB_DIR)/libcudart.so.3; fi
@@ -177,7 +177,7 @@ $(SIM_LIB_DIR)/libcudart.dylib: makedirs $(LIBS) cudalib
 			$(SIM_OBJ_FILES_DIR)/gpgpu-sim/*.o \
 			$(SIM_OBJ_FILES_DIR)/$(INTERSIM)/*.o  \
 			$(SIM_OBJ_FILES_DIR)/*.o -lm -lz -pthread \
-			$(MCPAT) \
+			$(GPUCALORIE) \
 			-o $(SIM_LIB_DIR)/libcudart.dylib
 
 $(SIM_LIB_DIR)/libOpenCL.so: makedirs $(LIBS) opencllib
@@ -188,7 +188,7 @@ $(SIM_LIB_DIR)/libOpenCL.so: makedirs $(LIBS) opencllib
 			$(SIM_OBJ_FILES_DIR)/gpgpu-sim/*.o \
 			$(SIM_OBJ_FILES_DIR)/$(INTERSIM)/*.o \
 			$(SIM_OBJ_FILES_DIR)/*.o -lm -lz -lGL -pthread \
-			$(MCPAT) \
+			$(GPUCALORIE) \
 			-o $(SIM_LIB_DIR)/libOpenCL.so 
 	if [ ! -f $(SIM_LIB_DIR)/libOpenCL.so.1 ]; then ln -s libOpenCL.so $(SIM_LIB_DIR)/libOpenCL.so.1; fi
 	if [ ! -f $(SIM_LIB_DIR)/libOpenCL.so.1.1 ]; then ln -s libOpenCL.so $(SIM_LIB_DIR)/libOpenCL.so.1.1; fi
@@ -198,9 +198,11 @@ cudalib: makedirs cuda-sim
 	$(MAKE) -C ./libcuda/
 
 ifneq ($(GPGPUSIM_POWER_MODEL),)
-mcpat: makedirs
+gpucalorie: makedirs
+	$(MAKE) -C $(GPGPUSIM_POWER_MODEL)/hotspot depend
+	$(MAKE) -C $(GPGPUSIM_POWER_MODEL)/hotspot $(GPUCALORIE_DBG_FLAG)
 	$(MAKE) -C $(GPGPUSIM_POWER_MODEL) depend
-	$(MAKE) -C $(GPGPUSIM_POWER_MODEL) $(MCPAT_DBG_FLAG)
+	$(MAKE) -C $(GPGPUSIM_POWER_MODEL) $(GPUCALORIE_DBG_FLAG)
 endif
 
 cuda-sim: makedirs
@@ -243,8 +245,8 @@ makedirs:
 	if [ ! -d $(SIM_OBJ_FILES_DIR)/libopencl/bin ]; then mkdir -p $(SIM_OBJ_FILES_DIR)/libopencl/bin; fi;
 	if [ ! -d $(SIM_OBJ_FILES_DIR)/$(INTERSIM) ]; then mkdir -p $(SIM_OBJ_FILES_DIR)/$(INTERSIM); fi;
 	if [ ! -d $(SIM_OBJ_FILES_DIR)/cuobjdump_to_ptxplus ]; then mkdir -p $(SIM_OBJ_FILES_DIR)/cuobjdump_to_ptxplus; fi;
-	if [ ! -d $(SIM_OBJ_FILES_DIR)/gpuwattch ]; then mkdir -p $(SIM_OBJ_FILES_DIR)/gpuwattch; fi;
-	if [ ! -d $(SIM_OBJ_FILES_DIR)/gpuwattch/cacti ]; then mkdir -p $(SIM_OBJ_FILES_DIR)/gpuwattch/cacti; fi;
+	if [ ! -d $(SIM_OBJ_FILES_DIR)/gpucalorie ]; then mkdir -p $(SIM_OBJ_FILES_DIR)/gpucalorie; fi;
+	if [ ! -d $(SIM_OBJ_FILES_DIR)/gpucalorie/hotspot ]; then mkdir -p $(SIM_OBJ_FILES_DIR)/gpucalorie/hotspot; fi;
 
 all:
 	$(MAKE) gpgpusim

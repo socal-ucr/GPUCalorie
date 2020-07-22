@@ -393,7 +393,6 @@ class gpgpu_sim_config : public power_config,
     m_shader_config.init();
     ptx_set_tex_cache_linesize(m_shader_config.m_L1T_config.get_line_sz());
     m_memory_config.init();
-    init_clock_domains();
     power_config::init();
     thermal_config::init();
     Trace::init();
@@ -433,22 +432,12 @@ class gpgpu_sim_config : public power_config,
   char *gpgpu_core_supported_clocks;
 
  private:
-  void init_clock_domains(void);
 
   // backward pointer
   class gpgpu_context *gpgpu_ctx;
   bool m_valid;
   shader_core_config m_shader_config;
   memory_config m_memory_config;
-  // clock domains - frequency
-  double core_freq;
-  double icnt_freq;
-  double dram_freq;
-  double l2_freq;
-  double core_period;
-  double icnt_period;
-  double dram_period;
-  double l2_period;
 
   // GPGPU-Sim timing model options
   unsigned long long gpu_max_cycle_opt;
@@ -625,8 +614,24 @@ class gpgpu_sim : public gpgpu_t {
   // backward pointer
   class gpgpu_context *gpgpu_ctx;
 
+
+
  private:
   // clocks
+  // clock domains - frequency
+  double core_freq;
+  double icnt_freq;
+  double dram_freq;
+  double l2_freq;
+  double core_period;
+  double icnt_period;
+  double dram_period;
+  double l2_period;
+  void dtm();
+  int current_clock_index;
+  double core_supported_clocks[18];
+
+  void init_clock_domains(void);
   void reinit_clock_domains(void);
   int next_clock_domain(void);
   void issue_block2core();

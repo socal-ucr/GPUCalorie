@@ -163,7 +163,7 @@ option_parser_register(opp, "-floorplan_input_file", OPT_CSTR,
                            "0");                                                                                          
                                                                                                                     
   option_parser_register(opp, "-thermal_ceiling", OPT_INT32,                                                              
-                           &g_thermal_trace_zlevel,                                                                       
+                           &g_thermal_ceiling,                                                                       
                            "thermal ceiling for gpu in Kelvin",                                                           
                            "358");                                                                                        
                                                                                                                           
@@ -652,6 +652,12 @@ void gpgpu_sim_config::reg_options(option_parser_t opp) {
                          "Clock Domain Frequencies in MhZ {<Core Clock>:<ICNT "
                          "Clock>:<L2 Clock>:<DRAM Clock>}",
                          "500.0:2000.0:2000.0:2000.0");
+  option_parser_register(opp, "-gpgpu_core_supported_clocks", OPT_CSTR,
+                         &gpgpu_core_supported_clocks,
+                         "Core Domain Supported Frequencies {}",
+                         "1809,1708,1594,1506,1404,"
+                         "1303,1202,1101,999,898,"
+                         "797,696,607");
   option_parser_register(
       opp, "-gpgpu_max_concurrent_kernel", OPT_INT32, &max_concurrent_kernel,
       "maximum kernels that can run concurrently on GPU", "8");
@@ -962,7 +968,7 @@ int gpgpu_sim::num_registers_per_block() const {
 
 int gpgpu_sim::wrp_size() const { return m_shader_config->warp_size; }
 
-int gpgpu_sim::shader_clock() const { return m_config.core_freq / 1000; }
+int gpgpu_sim::shader_clock() const { return core_freq / 1000; }
 
 int gpgpu_sim::max_cta_per_core() const {
   return m_shader_config->max_cta_per_core;
@@ -990,13 +996,30 @@ enum divergence_support_t gpgpu_sim::simd_model() const {
   return m_shader_config->model;
 }
 
-void gpgpu_sim_config::init_clock_domains(void) {
-  sscanf(gpgpu_clock_domains, "%lf:%lf:%lf:%lf", &core_freq, &icnt_freq,
+void gpgpu_sim::init_clock_domains(void) {
+  sscanf(m_config.gpgpu_clock_domains, "%lf:%lf:%lf:%lf", &core_freq, &icnt_freq,
          &l2_freq, &dram_freq);
-  core_freq = core_freq MhZ;
-  icnt_freq = icnt_freq MhZ;
-  l2_freq = l2_freq MhZ;
-  dram_freq = dram_freq MhZ;
+
+  char *src = m_config.gpgpu_core_supported_clocks;
+  char temp[5];
+
+  /* chop the names from the line read  */  
+  for(int i = 0; *src && i < 18; i++) {
+    if(!sscanf(src, "%[^,]", temp)){ 
+         fatal("invalid format of names\n"); 
+    }
+    src += strlen(temp);
+    while (ispunct((int)*src))
+      src++;
+         
+    core_supported_clocks[i] = std::stod(temp);
+  }
+  current_clock_index = 0;
+  //GPU BOOST ENABLED
+  core_freq = core_supported_clocks[current_clock_index] MhZ;
+  icnt_freq = core_supported_clocks[current_clock_index] MhZ;
+  l2_freq = core_supported_clocks[current_clock_index] MhZ;
+  dram_freq = core_supported_clocks[current_clock_index] MhZ;
   core_period = 1 / core_freq;
   icnt_period = 1 / icnt_freq;
   dram_period = 1 / dram_freq;
@@ -1006,6 +1029,43 @@ void gpgpu_sim_config::init_clock_domains(void) {
   printf("GPGPU-Sim uArch: clock periods: %.20lf:%.20lf:%.20lf:%.20lf\n",
          core_period, icnt_period, l2_period, dram_period);
 }
+void gpgpu_sim::dtm() {
+ 
+  static bool init=true;
+
+  if(init){ // If first cycle, don't have any power numbers yet
+   init=false;
+    return;
+  }
+
+  double temp = m_gpu_calorie->get_max_chip_temp();
+  static int num_supported_clocks = 18;
+  if (temp >= m_config.g_thermal_ceiling && current_clock_index < num_supported_clocks) {
+    current_clock_index++;
+  core_freq = core_supported_clocks[current_clock_index] MhZ;
+  icnt_freq = core_supported_clocks[current_clock_index] MhZ;
+  l2_freq = core_supported_clocks[current_clock_index] MhZ;
+  dram_freq = core_supported_clocks[current_clock_index] MhZ;
+  core_period = 1 / core_freq;
+  icnt_period = 1 / icnt_freq;
+  dram_period = 1 / dram_freq;
+  l2_period = 1 / l2_freq;
+  }
+  else if (temp < m_config.g_thermal_ceiling && current_clock_index > 0) {
+    current_clock_index--;
+  core_freq = core_supported_clocks[current_clock_index] MhZ;
+  icnt_freq = core_supported_clocks[current_clock_index] MhZ;
+  l2_freq = core_supported_clocks[current_clock_index] MhZ;
+  dram_freq = core_supported_clocks[current_clock_index] MhZ;
+  core_period = 1 / core_freq;
+  icnt_period = 1 / icnt_freq;
+  dram_period = 1 / dram_freq;
+  l2_period = 1 / l2_freq;
+  }
+
+printf("DTM: %d, %lf,%lf,%d\n",current_clock_index, core_supported_clocks[current_clock_index],temp,m_config.g_thermal_ceiling);
+fflush(stdout);
+} 
 
 void gpgpu_sim::reinit_clock_domains(void) {
   core_time = 0;
@@ -1051,6 +1111,7 @@ void gpgpu_sim::init() {
   partiton_reqs_in_parallel_util = 0;
   gpu_sim_cycle_parition_util = 0;
 
+  init_clock_domains();
   reinit_clock_domains();
   gpgpu_ctx->func_sim->set_param_gpgpu_num_shaders(m_config.num_shader());
   for (unsigned i = 0; i < m_shader_config->n_simt_clusters; i++)
@@ -1332,13 +1393,13 @@ void gpgpu_sim::gpu_print_stat() {
   // %lld\n", partiton_replys_in_parallel_total );
   printf("L2_BW  = %12.4f GB/Sec\n",
          ((float)(partiton_replys_in_parallel * 32) /
-          (gpu_sim_cycle * m_config.icnt_period)) /
+          (gpu_sim_cycle * icnt_period)) /
              1000000000);
   printf("L2_BW_total  = %12.4f GB/Sec\n",
          ((float)((partiton_replys_in_parallel +
                    partiton_replys_in_parallel_total) *
                   32) /
-          ((gpu_tot_sim_cycle + gpu_sim_cycle) * m_config.icnt_period)) /
+          ((gpu_tot_sim_cycle + gpu_sim_cycle) * icnt_period)) /
              1000000000);
 
   time_t curr_time;
@@ -1739,19 +1800,19 @@ int gpgpu_sim::next_clock_domain(void) {
   if (l2_time <= smallest) {
     smallest = l2_time;
     mask |= L2;
-    l2_time += m_config.l2_period;
+    l2_time += l2_period;
   }
   if (icnt_time <= smallest) {
     mask |= ICNT;
-    icnt_time += m_config.icnt_period;
+    icnt_time += icnt_period;
   }
   if (dram_time <= smallest) {
     mask |= DRAM;
-    dram_time += m_config.dram_period;
+    dram_time += dram_period;
   }
   if (core_time <= smallest) {
     mask |= CORE;
-    core_time += m_config.core_period;
+    core_time += core_period;
   }
   return mask;
 }
@@ -1900,10 +1961,10 @@ void gpgpu_sim::cycle() {
 #ifdef GPGPUSIM_POWER_MODEL
   if(m_config.g_power_simulation_enabled &&
     (!((gpu_tot_sim_cycle + gpu_sim_cycle) % m_config.gpu_stat_sample_freq))) {
-       m_gpu_calorie->cycle(m_config, m_power_stats,m_config.core_period);
-      // if(m_config.g_dtm_enabled) {
-      //     dtm();
-      //  }
+      m_gpu_calorie->cycle(m_config, m_power_stats,core_period);
+      if(m_config.g_dtm_enabled) {
+        dtm();
+      }
   }
 #endif
 

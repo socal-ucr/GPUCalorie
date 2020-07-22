@@ -148,7 +148,7 @@ void *gpgpu_sim_thread_concurrent(void *ctx_ptr) {
       ctx->the_gpgpusim->g_the_gpu->print_stats();
       ctx->the_gpgpusim->g_the_gpu->update_stats();
       ctx->print_simulation_time();
-      ctx->the_gpgpusim->g_the_gpu->print_heatmap();
+    //  ctx->the_gpgpusim->g_the_gpu->print_heatmap();
     }
     pthread_mutex_lock(&(ctx->the_gpgpusim->g_sim_lock));
     ctx->the_gpgpusim->g_sim_active = false;

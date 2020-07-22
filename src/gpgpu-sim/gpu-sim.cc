@@ -251,7 +251,7 @@ void thermal_config::reg_options(class OptionParser * opp)
                            "0");
 
   option_parser_register(opp, "-thermal_ceiling", OPT_INT32,
-                           &g_thermal_trace_zlevel,
+                           &g_thermal_ceiling,
                            "thermal ceiling for gpu in Kelvin", 
                            "358");
 
@@ -951,6 +951,10 @@ gpgpu_sim::gpgpu_sim(const gpgpu_sim_config &config, gpgpu_context *ctx)
   m_functional_sim_kernel = NULL;
 }
 
+gpgpu_sim::~gpgpu_sim() {
+  print_heatmap();
+}
+
 int gpgpu_sim::shared_mem_size() const {
   return m_shader_config->gpgpu_shmem_size;
 }
@@ -1001,7 +1005,7 @@ void gpgpu_sim::init_clock_domains(void) {
   sscanf(m_config.gpgpu_clock_domains, "%lf:%lf:%lf:%lf", &core_freq, &icnt_freq,
          &l2_freq, &dram_freq);
   char *src = m_config.gpgpu_core_supported_clocks;
-  char temp[4];
+  char temp[5];
   /* chop the names from the line read  */  
   for(int i = 0; *src && i < 18; i++) {
     if(!sscanf(src, "%[^,]", temp)){ 
@@ -1016,9 +1020,9 @@ void gpgpu_sim::init_clock_domains(void) {
   current_clock_index = 0;
   //GPU BOOST ENABLED
   core_freq = core_supported_clocks[current_clock_index] MhZ;
-  icnt_freq = icnt_freq MhZ;
-  l2_freq = l2_freq MhZ;
-  dram_freq = dram_freq MhZ;
+  icnt_freq = core_supported_clocks[current_clock_index] MhZ;
+  l2_freq = core_supported_clocks[current_clock_index] MhZ;
+  dram_freq = core_supported_clocks[current_clock_index] MhZ;
   core_period = 1 / core_freq;
   icnt_period = 1 / icnt_freq;
   dram_period = 1 / dram_freq;
@@ -1030,27 +1034,42 @@ void gpgpu_sim::init_clock_domains(void) {
 }
 
 void gpgpu_sim::dtm() {
-    
+ 
   static bool init=true;
 
   if(init){ // If first cycle, don't have any power numbers yet
-    init=false;
+   init=false;
     return;
   }
 
   double temp = m_gpu_calorie->get_max_chip_temp();
   static int num_supported_clocks = 18;
-  if (temp >= m_config.g_thermal_ceiling && current_clock_index < num_supported_clocks) {
+  if (temp >= m_config.g_thermal_ceiling &&
+      current_clock_index < num_supported_clocks) {
     current_clock_index++;
     core_freq = core_supported_clocks[current_clock_index] MhZ;
+    icnt_freq = core_supported_clocks[current_clock_index] MhZ;
+    l2_freq = core_supported_clocks[current_clock_index] MhZ;
+    dram_freq = core_supported_clocks[current_clock_index] MhZ;
     core_period = 1 / core_freq;
+    icnt_period = 1 / icnt_freq;
+    dram_period = 1 / dram_freq;
+    l2_period = 1 / l2_freq;
   }
-  else if (temp < m_config.g_thermal_ceiling && current_clock_index > 0) {
+  else if (temp < m_config.g_thermal_ceiling &&
+           current_clock_index > 0) {
     current_clock_index--;
     core_freq = core_supported_clocks[current_clock_index] MhZ;
+    icnt_freq = core_supported_clocks[current_clock_index] MhZ;
+    l2_freq = core_supported_clocks[current_clock_index] MhZ;
+    dram_freq = core_supported_clocks[current_clock_index] MhZ;
     core_period = 1 / core_freq;
+    icnt_period = 1 / icnt_freq;
+    dram_period = 1 / dram_freq;
+    l2_period = 1 / l2_freq;
   }
-}
+} 
+
 
 void gpgpu_sim::reinit_clock_domains(void) {
   core_time = 0;
@@ -1171,6 +1190,12 @@ void gpgpu_sim::print_stats() {
         "----------------------------END-of-Interconnect-DETAILS---------------"
         "----------\n");
   }
+}
+
+void gpgpu_sim::print_heatmap() {
+  printf("HEATMAP\n");
+  fflush(stdout);
+  m_gpu_calorie->print_heatmap();
 }
 
 void gpgpu_sim::deadlock_check() {
@@ -1959,7 +1984,7 @@ void gpgpu_sim::cycle() {
     gpu_sim_time += core_period;
 #ifdef GPGPUSIM_POWER_MODEL
     if(m_config.g_power_simulation_enabled &&
-      (!(gpu_tot_sim_cycle + gpu_sim_cycle % m_config.gpu_stat_sample_freq))) {
+      (!((gpu_tot_sim_cycle + gpu_sim_cycle) % m_config.gpu_stat_sample_freq))) {
 
         m_gpu_calorie->cycle(m_config, m_power_stats,core_period);
 

@@ -35,9 +35,11 @@ gpu_calorie::gpu_calorie(const gpgpu_sim_config &config,const int stat_sample_fr
     g_dtm_enabled=config.g_dtm_enabled;
     
     if(g_power_simulation_enabled) {
-        m_power_interface = new power_interface(config);
+      m_power_interface = new power_interface(config);
+      if(config.g_thermal_simulation_enabled) {
         m_hotspot_wrapper = new hotspot_wrapper();
         m_hotspot_wrapper->init(config);
+      }
     }
 }
 
@@ -50,9 +52,14 @@ void gpu_calorie::cycle(const gpgpu_sim_config &config,class power_stat_t *power
     return;
   }
   m_power_interface->cycle(config,power_stats,core_period);
-  m_hotspot_wrapper->compute(power_stats,core_period*gpu_stat_sample_freq);
+  if(config.g_thermal_simulation_enabled)
+    m_hotspot_wrapper->compute(power_stats,core_period*gpu_stat_sample_freq);
 }
 
 double gpu_calorie::get_max_chip_temp() {
   return m_hotspot_wrapper->find_max_temp();
+}
+
+void gpu_calorie::print_heatmap() {
+  m_hotspot_wrapper->print_heatmap();
 }

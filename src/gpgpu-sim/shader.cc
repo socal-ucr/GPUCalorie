@@ -867,7 +867,7 @@ void shader_core_ctx::decode() {
       const warp_inst_t *pI2 =
           get_next_inst(m_inst_fetch_buffer.m_warp_id, pc + pI1->isize);
       if (pI2) {
-        m_gpu->gpgpu_ctx->stats->update_instr_stats(pI2->pc, DECODE_CNTR, 1);//<AliJahan stats>
+    //m_gpu->gpgpu_ctx->stats->update_instr_stats(pI2->pc, DECODE_CNTR, 1);//<AliJahan stats> this segfaults
         update_shader_stat(DECODE_CNTR, 1);//<AliJahan stats>
         m_warp[m_inst_fetch_buffer.m_warp_id]->ibuffer_fill(1, pI2);
         m_warp[m_inst_fetch_buffer.m_warp_id]->inc_inst_in_pipeline();

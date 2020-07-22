@@ -43,6 +43,7 @@ class gpu_calorie {
     gpu_calorie(const gpgpu_sim_config &config,const int stat_sample_freq);
     void cycle(const gpgpu_sim_config &config, class power_stat_t *power_stats,double core_period);
     double get_max_chip_temp();
+    void print_heatmap();
     private:
 
     class power_interface * m_power_interface;

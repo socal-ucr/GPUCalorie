@@ -524,7 +524,7 @@ class watchpoint_event {
 class gpgpu_sim : public gpgpu_t {
  public:
   gpgpu_sim(const gpgpu_sim_config &config, gpgpu_context *ctx);
-
+  ~gpgpu_sim();
   void set_prop(struct cudaDeviceProp *prop);
 
   void launch(kernel_info_t *kinfo);
@@ -548,6 +548,7 @@ class gpgpu_sim : public gpgpu_t {
   }
   void print_stats();
   void update_stats();
+  void print_heatmap();
   void deadlock_check();
   void inc_completed_cta() { gpu_completed_cta++; }
   void get_pdom_stack_top_info(unsigned sid, unsigned tid, unsigned *pc,

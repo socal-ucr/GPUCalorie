@@ -51,6 +51,7 @@ public:
     void update_temps(class power_stat_t *power_stats, double * vals);
     void compute(class power_stat_t *power_stats, double time_elapsed);
     double find_max_temp();
+    void print_heatmap();
 private:
 
     unsigned num_shaders;

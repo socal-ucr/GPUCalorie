@@ -11,13 +11,11 @@
 ifndef SUPERLU
 SUPERLU = 0
 endif
-
-SUPERLU = 0
  
 ifeq ($(SUPERLU), 1)
 #Super LU
 SuperLUroot     = /home/mchow009/superlu/build
-SUPERLULIB      = $(SuperLUroot)/lib64/libsuperlu.a
+SUPERLULIB      = $(SuperLUroot)/lib64/libsuperlu
 BLASLIB         = -L $(SuperLUroot)/lib64 -lblas
 SLU_HEADER  = $(SuperLUroot)/include
 

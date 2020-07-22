@@ -1363,11 +1363,11 @@ void gpgpu_sim::gpu_print_stat() {
 
   printf("gpu_sim_cycle = %lld\n", gpu_sim_cycle);
   printf("gpu_sim_insn = %lld\n", gpu_sim_insn);
-  printf("gpu_sim_time = %lld\n",gpu_sim_time);
+  printf("gpu_sim_time = %lf\n",gpu_sim_time);
   printf("gpu_ipc = %12.4f\n", (float)gpu_sim_insn / gpu_sim_cycle);
   printf("gpu_tot_sim_cycle = %lld\n", gpu_tot_sim_cycle + gpu_sim_cycle);
   printf("gpu_tot_sim_insn = %lld\n", gpu_tot_sim_insn + gpu_sim_insn);
-  printf("gpu_tot_sim_time = %lld\n",gpu_tot_sim_time);
+  printf("gpu_tot_sim_time = %lf\n",gpu_tot_sim_time);
   printf("gpu_tot_ipc = %12.4f\n", (float)(gpu_tot_sim_insn + gpu_sim_insn) /
                                        (gpu_tot_sim_cycle + gpu_sim_cycle));
   printf("gpu_tot_issued_cta = %lld\n",

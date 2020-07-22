@@ -166,7 +166,7 @@ class thermal_config {
             s++;
         }
         char buf1[1024];
-        snprintf(buf1,1024,"gpgpusim_thermal_trace__%s.log.gz",date);
+        snprintf(buf1,1024,"gpgpusim_thermal_trace__%s.log",date);
         g_thermal_trace_filename = strdup(buf1);
     }
 

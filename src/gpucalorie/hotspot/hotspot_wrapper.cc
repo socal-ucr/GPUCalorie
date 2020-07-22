@@ -174,7 +174,6 @@ void hotspot_wrapper::init(const gpgpu_sim_config &config) {
 }
 
 void hotspot_wrapper::update_power(class power_stat_t *power_stats) {
-
     for(unsigned i =0;i < num_shaders;i++)
         vals[i] = power_stats->get_sm_power(i);
 
@@ -182,11 +181,11 @@ void hotspot_wrapper::update_power(class power_stat_t *power_stats) {
     vals[num_shaders+1] = power_stats->get_dram_power();
     vals[num_shaders+2] = power_stats->get_dram_power();
     vals[num_shaders+3] = power_stats->get_dram_power();
+
     return;
 }
 
 void hotspot_wrapper::update_temps(class power_stat_t *power_stats, double *vals) {
-
     for(unsigned i =0;i < num_shaders;i++)
         power_stats->set_sm_temps(vals[i],i);
 

@@ -53,6 +53,7 @@ power_interface::power_interface(const gpgpu_sim_config &config)
         gzsetparams(power_trace_file, g_power_trace_zlevel, Z_DEFAULT_STRATEGY);
 
         gzsetparams(metric_trace_file, g_power_trace_zlevel, Z_DEFAULT_STRATEGY);
+        gzprintf(power_trace_file,"PERIOD,");
         for(unsigned i=0; i<config.num_shader(); i++){
             std::string power_label = "SM"+std::to_string((long long int)i) + ",";
             gzprintf(power_trace_file,power_label.c_str());
@@ -88,6 +89,8 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
     //TODO: Make this dyanimc
     double vals[10]; //we have 10 blocks in floorplan 
     double idle = 1.78; //active idle 17.8W / 10 blocks 
+
+    gzprintf(power_trace_file,"%.10e",core_period);
     for(int SM = 0; SM < num_shaders;SM++){
         //get component accesses
         unsigned decode = power_stats->get_total_inst(SM);
@@ -117,8 +120,9 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
         if (g_power_trace_enabled) {
             gzprintf(metric_trace_file,"%u,%u,%u,%u,%u,%u,%u,%u,%u,",
                      decode,alu,fp,dp,int_mul32,sfu,nb_rf,l1,shd_mem);
-            gzprintf(power_trace_file,"%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,",
-                 decode_p,alu_p,fp_p,dp_p,int_mul32_p,sfu_p,nb_rf_p,l1_p,shd_mem_p);
+          //  gzprintf(power_trace_file,"%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,",
+          //       decode_p,alu_p,fp_p,dp_p,int_mul32_p,sfu_p,nb_rf_p,l1_p,shd_mem_p);
+          gzprintf(power_trace_file,"%.6e",vals[SM]);
         }
     }
     unsigned l2 = power_stats->get_l2_read_hits() + power_stats->get_l2_write_hits();
@@ -136,7 +140,7 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
 
     if (g_power_trace_enabled) {
         gzprintf(metric_trace_file,"%u,%u\n",l2,dram);
-        gzprintf(power_trace_file,"%.10e,%.10e\n",l2_p,dram_p);
+        gzprintf(power_trace_file,"%.6e,%.6e\n",l2_p,dram_p);
         close_files();
     }
 }

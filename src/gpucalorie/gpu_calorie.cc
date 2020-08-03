@@ -51,7 +51,7 @@ void gpu_calorie::cycle(const gpgpu_sim_config &config,class power_stat_t *power
     init=false;
     return;
   }
-  m_power_interface->cycle(config,power_stats,core_period);
+  m_power_interface->cycle(config,power_stats,core_period*gpu_stat_sample_freq);
   if(config.g_thermal_simulation_enabled)
     m_hotspot_wrapper->compute(power_stats,core_period*gpu_stat_sample_freq);
 }

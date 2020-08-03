@@ -1045,7 +1045,7 @@ void gpgpu_sim::dtm() {
   double temp = m_gpu_calorie->get_max_chip_temp();
   static int num_supported_clocks = 18;
   if (temp >= m_config.g_thermal_ceiling &&
-      current_clock_index < num_supported_clocks) {
+      current_clock_index < num_supported_clocks-1) {
     current_clock_index++;
     core_freq = core_supported_clocks[current_clock_index] MhZ;
     icnt_freq = core_supported_clocks[current_clock_index] MhZ;

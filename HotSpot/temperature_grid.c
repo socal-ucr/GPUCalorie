@@ -1912,7 +1912,10 @@ void xlate_vector_b2g(grid_model_t *model, double *b, grid_model_vector_t *g, in
                                              model->layers[n].flp, &b[base], type);
               g->cuboid[n][i][j] = p * area;
              // if (g->cuboid[n][i][j] != 0) printf("n:%d | i:%d | j:%d | p:%0.20lf | a:%0.20lf | pa:%0.20lf\n",n,i,j,p,area,g->cuboid[n][i][j]);
-              if (n==5 && g->cuboid[n][i][j] == 0.0 ) g->cuboid[n][i][j] += 0.004345703125;
+                if(model->config.model_secondary)
+                    if (n==5) g->cuboid[n][i][j] += 0.002655029296875;
+                else
+                    if (n==0) g->cuboid[n][i][j] += 0.002655029296875;
               //if (n==0) g->cuboid[n][i][j] += 1;
 
             }

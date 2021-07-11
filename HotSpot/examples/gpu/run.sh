@@ -21,7 +21,7 @@ FLOORPLAN=1050_top_l2.flp
 # 'gcc.ttrace' are given below. First, let us run the simulations with a
 # set of default model parameters listed in the file 'hotspot.config'
 # and gather the steady state temperatures onto a file. This is done by:
- ../../hotspot -c example.config -f floorplans/${FLOORPLAN} -p ptraces/${WORKLOAD}.ptrace -materials_file example.materials -model_type grid -steady_file outputs/${WORKLOAD}.steady -o outputs/${WORKLOAD}.ttrace -grid_steady_file outputs/${WORKLOAD}.grid.steady
+ ../../hotspot -c example.config -f floorplans/${FLOORPLAN} -p ptraces/${WORKLOAD}.ptrace -materials_file example.materials -model_type grid -steady_file outputs/${WORKLOAD}.steady -grid_steady_file outputs/${WORKLOAD}.grid.steady
 
 # Now, 'gcc.ttrace' does contain a thermal trace but the initial
 # temperatures that were used to generate it were default constant

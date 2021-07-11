@@ -1,6 +1,8 @@
-gpgpu-sim/*~
-gpgpu-sim/*.swp
-gpgpu-sim/*.swo
+*~
+*.swp
+*.swo
+*.o
+*.d
 
 gpgpu-sim/src/intersim2/lex.yy.c
 gpgpu-sim/src/intersim2/y.tab.c
@@ -61,3 +63,8 @@ gpgpu-sim/debug_tools/WatchYourStep/ptxjitplus/*.ptx
 gpgpu-sim/accel-sim-framework/
 gpgpu-sim/gpu-app-collection/
 
+
+#Hotspot build
+HotSpot/hotfloorplan
+HotSpot/hotspot
+HotSpot/libhotspot.a

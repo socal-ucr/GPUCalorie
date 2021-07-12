@@ -3103,9 +3103,9 @@ void compute_temp_grid(grid_model_t *model, double *power, double *temp, double 
   double t, h, new_h;
   int extra_nodes;
   grid_model_vector_t *p;
-#if VERBOSE > 1
+//#if VERBOSE > 1
   unsigned int i = 0;
-#endif
+//#endif
 
   if (model->config.model_secondary)
     extra_nodes = EXTRA + EXTRA_SEC;
@@ -3149,9 +3149,9 @@ void compute_temp_grid(grid_model_t *model, double *power, double *temp, double 
                   /* the slope function callback is typecast accordingly */
                   (slope_fn_ptr) slope_fn_grid);
       new_h = MIN(new_h, time_elapsed-t-h);
-#if VERBOSE > 1
+//#if VERBOSE > 1
       i++;
-#endif	
+//#endif	
   }
 
 #if VERBOSE > 1

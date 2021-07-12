@@ -114,7 +114,7 @@
 #define C_FACTOR	0.333		/* fitting factor to match floworks (due to lumping)	*/
 
 /* constants related to transient temperature calculation	*/
-#define MIN_STEP	1e-7	/* 0.1 us	*/
+#define MIN_STEP	1e-5	/* 0.1 us	*/
 
 /* BLAS/LAPACK definitions	*/
 #define MA_NONE		0 

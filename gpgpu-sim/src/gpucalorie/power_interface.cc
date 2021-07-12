@@ -87,8 +87,8 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
         open_files();
 
     //TODO: Make this dyanimc
-    double vals[10]; //we have 10 blocks in floorplan 
-    double idle = 1.78; //active idle 17.8W / 10 blocks 
+    double vals[46]; //we have 10 blocks in floorplan 
+    int numComponents = 7;
 
     gzprintf(power_trace_file,"%.10e,",core_period);
     for(int SM = 0; SM < num_shaders;SM++){
@@ -115,14 +115,21 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
         double l1_p = ((double)l1 * config.l1_epa) / core_period;
         double shd_mem_p = ((double)shd_mem * config.shd_epa) / core_period;
 
-        vals[SM] = decode_p + alu_p + fp_p + dp_p + int_mul32_p + sfu_p + nb_rf_p + l1_p + shd_mem_p + idle;
+        vals[(SM*numComponents)+0] = (alu_p + fp_p + dp_p + int_mul32_p + sfu_p)/ 2.0;
+        vals[(SM*numComponents)+1] = (alu_p + fp_p + dp_p + int_mul32_p + sfu_p)/ 2.0;
+        vals[(SM*numComponents)+2] = decode_p;
+        vals[(SM*numComponents)+3] = l1_p / 2.0;
+        vals[(SM*numComponents)+4] = l1_p / 2.0;
+        vals[(SM*numComponents)+5] = nb_rf_p;
+        vals[(SM*numComponents)+6] = shd_mem_p;
+
+    
 
         if (g_power_trace_enabled) {
             gzprintf(metric_trace_file,"%u,%u,%u,%u,%u,%u,%u,%u,%u,",
                      decode,alu,fp,dp,int_mul32,sfu,nb_rf,l1,shd_mem);
             gzprintf(power_trace_file,"%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,%.10e,",
-                 decode_p,alu_p,fp_p,dp_p,int_mul32_p,sfu_p,nb_rf_p,l1_p,shd_mem_p);
-         // gzprintf(power_trace_file,"%.6e,",vals[SM]);
+                     decode_p,alu_p,fp_p,dp_p,int_mul32_p,sfu_p,nb_rf_p,l1_p,shd_mem_p);
         }
     }
     unsigned l2 = power_stats->get_l2_read_hits() + power_stats->get_l2_write_hits();
@@ -132,8 +139,8 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
     double l2_p = ((double)l2 * config.l2_epa) / core_period;
     double dram_p = ((double)dram * config.dram_epa) / core_period;
 
-    vals[num_shaders] = l2_p + idle;
-    vals[num_shaders+1] = (dram_p/3.0) + idle;
+    vals[(6*numComponents)+0] = l2_p;
+    vals[(6*numComponents)+1] = (dram_p/3.0);
 
     power_stats->save_stats();
     power_stats->update_power(vals);

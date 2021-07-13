@@ -3,7 +3,9 @@
 *.swo
 *.o
 *.d
-
+*.vscode
+*.out
+*.err
 gpgpu-sim/src/intersim2/lex.yy.c
 gpgpu-sim/src/intersim2/y.tab.c
 gpgpu-sim/src/intersim2/y.tab.h

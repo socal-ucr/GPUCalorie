@@ -7,6 +7,7 @@
 # relevant to your target and set the appropriate
 # path and flag options
 
+SUPERLU = 0
 ifeq ($(SUPERLU), 1)
 #Super LU
 SuperLUroot	= /home/mchow009/superlu/build

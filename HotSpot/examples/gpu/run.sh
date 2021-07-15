@@ -9,6 +9,7 @@ mkdir outputs/
 
 WORKLOAD=backprop
 FLOORPLAN=1050_top_l2.flp
+CONFIG=oil_bare_silicon
 
 # The thermal model is bundled as a trace-level simulator that takes a
 # power trace file and a floorplan file as inputs and outputs the
@@ -21,7 +22,7 @@ FLOORPLAN=1050_top_l2.flp
 # 'gcc.ttrace' are given below. First, let us run the simulations with a
 # set of default model parameters listed in the file 'hotspot.config'
 # and gather the steady state temperatures onto a file. This is done by:
- ../../hotspot -c example.config -f floorplans/${FLOORPLAN} -p ptraces/${WORKLOAD}.ptrace -materials_file example.materials -model_type grid -steady_file outputs/${WORKLOAD}.steady -grid_steady_file outputs/${WORKLOAD}.grid.steady
+ ../../hotspot -c configs/${CONFIG}.config -f floorplans/${FLOORPLAN} -p ptraces/${WORKLOAD}.ptrace -materials_file example.materials -model_type grid -steady_file outputs/${WORKLOAD}.steady -grid_steady_file outputs/${WORKLOAD}.grid.steady
 
 # Now, 'gcc.ttrace' does contain a thermal trace but the initial
 # temperatures that were used to generate it were default constant
@@ -30,8 +31,8 @@ FLOORPLAN=1050_top_l2.flp
 # temperatures are a good estimate of what the correct set of initial
 # temperatures are.  So, we now use the steady state temperatures
 # produced as the set of initial temperatures for the next 'true' run:
-cp outputs/${WORKLOAD}.steady ${WORKLOAD}.init
-../../hotspot -c example.config -init_file ${WORKLOAD}.init -f floorplans/${FLOORPLAN} -p ptraces/${WORKLOAD}.ptrace -materials_file example.materials -model_type grid -o outputs/${WORKLOAD}.ttrace -grid_transient_file outputs/${WORKLOAD}.grid.ttrace
+cp outputs/${WORKLOAD}.steady outputs/${WORKLOAD}.init
+../../hotspot -c configs/${CONFIG}.config -init_file outputs/${WORKLOAD}.init -f floorplans/${FLOORPLAN} -p ptraces/${WORKLOAD}.ptrace -materials_file example.materials -model_type grid -grid_steady_file outputs/${WORKLOAD}.grid.steady
 
 # Note that the '-o <file>' command line flag is optional. Omitting it
 # makes HotSpot compute the steady state temperatures directly without

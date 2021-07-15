@@ -14,7 +14,6 @@ CONFIG=example
 RODINIA=(backprop bfs b+tree dwt2d gaussian heartwall hotspot kmeans lavaMD lud myocyte nw)
 
 bm=$((${SLURM_ARRAY_TASK_ID} % 12))
-
 bm=${RODINIA[${bm}]}
 
 POWER_DIR=ptraces
@@ -22,4 +21,4 @@ OUT_DIR=outputs
 
  ../../hotspot -c example.config -p ptraces/${WORKLOAD}.ptrace -materials_file example.materials -grid_layer_file example.lcf -model_type grid -detailed_3D on -use_microchannels 1 -steady_file outputs/${WORKLOAD}.steady -grid_steady_file outputs/${WORKLOAD}.grid.steady
 cp ${OUT_DIR}/${bm}.steady ${OUT_DIR}/${bm}.init
-../../hotspot -c example.config -init_file ${WORKLOAD}.init-p ptraces/${WORKLOAD}.ptrace -materials_file example.materials -grid_layer_file example.lcf -model_type grid -detailed_3D on -use_microchannels 1 -o outputs/${WORKLOAD}.ttrace -grid_transient_file outputs/${WORKLOAD}.grid.ttrace
+../../hotspot -c example.config -init_file ${OUT_DIR}/${WORKLOAD}.init -p ptraces/${WORKLOAD}.ptrace -materials_file example.materials -grid_layer_file example.lcf -model_type grid -detailed_3D on -use_microchannels 1 -o outputs/${WORKLOAD}.ttrace -grid_transient_file outputs/${WORKLOAD}.grid.ttrace -grid_steady_file outputs/${WORKLOAD}.grid.steady

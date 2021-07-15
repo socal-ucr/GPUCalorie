@@ -9,19 +9,19 @@
 #SBATCH --oversubscribe
 #SBATCH --array=0-11
 
-CONFIG=example
+CONFIG=oil_bare_silicon
 
 RODINIA=(backprop bfs b+tree dwt2d gaussian heartwall hotspot kmeans lavaMD lud myocyte nw)
 
 bm=$((${SLURM_ARRAY_TASK_ID} % 12))
-
 bm=${RODINIA[${bm}]}
+
 flp=1050_top_l2
 
 POWER_DIR=ptraces
 OUT_DIR=outputs
 
 
-../../hotspot -c ${CONFIG}.config  -f floorplans/${flp}.flp -p ${POWER_DIR}/${bm}.ptrace -materials_file example.materials -steady_file ${OUT_DIR}/${bm}.steady -model_type grid -grid_steady_file ${OUT_DIR}/${bm}.grid.steady
+../../hotspot -c configs/${CONFIG}.config  -f floorplans/${flp}.flp -p ${POWER_DIR}/${bm}.ptrace -materials_file example.materials -steady_file ${OUT_DIR}/${bm}.steady -model_type grid -grid_steady_file ${OUT_DIR}/${bm}.grid.steady
 cp ${OUT_DIR}/${bm}.steady ${OUT_DIR}/${bm}.init
-../../hotspot -c ${CONFIG}.config  -init_file ${OUT_DIR}/${bm}.init -f floorplans/${flp}.flp -p ${POWER_DIR}/${bm}.ptrace -materials_file example.materials -steady_file ${OUT_DIR}/${bm}.steady -model_type grid -grid_steady_file ${OUT_DIR}/${bm}.grid.steady
+../../hotspot -c configs/${CONFIG}.config  -init_file ${OUT_DIR}/${bm}.init -f floorplans/${flp}.flp -p ${POWER_DIR}/${bm}.ptrace -materials_file example.materials -steady_file ${OUT_DIR}/${bm}.steady -model_type grid -grid_steady_file ${OUT_DIR}/${bm}.grid.steady

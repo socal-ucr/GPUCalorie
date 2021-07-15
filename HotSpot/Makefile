@@ -1,35 +1,31 @@
 #
-# Thanks to Greg Link from Penn State University
+# Thanks to Greg Link from Penn State University 
 # for his math acceleration engine.
 #
 
-# Uncomment the following math acceleration flags
+# Uncomment the following math acceleration flags 
 # relevant to your target and set the appropriate
 # path and flag options
 
-#SUPERLU: [0-1]
-ifndef SUPERLU
-SUPERLU = 0
-endif
-
 ifeq ($(SUPERLU), 1)
-#SuperLUroot	= /usr/lib/x86_64-linux-gnu
-BLASLIB    	= -lblas
-SUPERLULIB 	= -lsuperlu
-SLU_HEADER  = /usr/include/superlu/
+#Super LU
+SuperLUroot	= /home/mchow009/superlu/build
+SUPERLULIB 	= -L$(SuperLUroot)/lib64/ -lsuperlu -Wl,-rpath=$(SuperLUroot)/lib64/
+BLASLIB    	= -L $(SuperLUroot)/lib64 -lblas -Wl,-rpath=-L$(SuperLUroot)/lib64/
+SLU_HEADER  = $(SuperLUroot)/include
 
 MATHACCEL	= none
 INCDIR		= $(SLU_HEADER)
-LIBDIR		=
-LIBS  		= -lm $(BLASLIB) $(SUPERLULIB)
-EXTRAFLAGS	=
+LIBDIR		= 
+LIBS  		= -lm $(SUPERLULIB) $(BLASLIB)
+EXTRAFLAGS	= 
 else
 # default - no math acceleration
 MATHACCEL	= none
-INCDIR		=
-LIBDIR		=
+INCDIR		= 
+LIBDIR		= 
 LIBS		= -lm
-EXTRAFLAGS	=
+EXTRAFLAGS	= 
 endif
 
 # Intel Machines - acceleration with the Intel
@@ -38,7 +34,7 @@ endif
 #INCDIR		= /bigdisk/ks4kk/mkl/10.1.0.015/include
 #LIBDIR		= /bigdisk/ks4kk/mkl/10.1.0.015/lib/em64t
 #LIBS		= -lmkl_lapack -lmkl -lguide -lm -lpthread
-#EXTRAFLAGS	=
+#EXTRAFLAGS	= 
 
 # AMD Machines - acceleration with the AMD
 # Core Math Library (ACML)
@@ -46,24 +42,23 @@ endif
 #INCDIR		= /uf1/ks4kk/lib/acml3.6.0/gfortran32/include
 #LIBDIR		= /uf1/ks4kk/lib/acml3.6.0/gfortran32/lib
 #LIBS		= -lacml -lgfortran -lm
-#EXTRAFLAGS	=
+#EXTRAFLAGS	= 
 
 # Apple Machines - acceleration with the Apple
 # Velocity Engine (AltiVec)
 #MATHACCEL	= apple
-#INCDIR		=
-#LIBDIR		=
+#INCDIR		= 
+#LIBDIR		= 
 #LIBS		= -framework vecLib -lm
-#EXTRAFLAGS	=
+#EXTRAFLAGS	= 
 
 # Sun Machines - acceleration with the SUN
 # performance library (sunperf)
 #MATHACCEL	= sun
-#INCDIR		=
-#LIBDIR		=
+#INCDIR		= 
+#LIBDIR		= 
 #LIBS		= -library=sunperf
-#EXTRAFLAGS	= -dalign
-
+#EXTRAFLAGS	= -dalign 
 # basic compiler flags - special case for sun
 ifeq ($(MATHACCEL), sun)
 CC 			= CC
@@ -76,7 +71,7 @@ else
 OFLAGS		= -xO4 -erroff=badargtypel2w
 endif	# DEBUG = 2
 endif	# DEBUG = 1
-else	# MATHACCEL != sun
+else	# MATHACCEL != sun	
 CC 			= gcc
 ifeq ($(DEBUG), 1)
 OFLAGS		= -O0 -ggdb -Wall
@@ -94,8 +89,13 @@ RANLIB		= ranlib
 OEXT		= o
 LEXT		= a
 # Verbosity level [0-3]
-ifndef VERBOSE
-VERBOSE	= 1
+#ifndef VERBOSE
+#VERBOSE	= 1
+#endif
+VERBOSE = 2
+#BU_3D: Debugging 3D [0-1]
+ifndef DEBUG3D
+DEBUG3D = 0
 endif
 
 # Numerical ID for each acceleration engine
@@ -123,25 +123,13 @@ ifdef LIBDIR
 LIBDIRFLAG = -L$(LIBDIR)
 endif
 
-CFLAGS	= $(OFLAGS) $(EXTRAFLAGS) $(INCDIRFLAG) $(LIBDIRFLAG) -DVERBOSE=$(VERBOSE) -DMATHACCEL=$(ACCELNUM) -DSUPERLU=$(SUPERLU)
+CFLAGS	= $(OFLAGS) $(EXTRAFLAGS) $(INCDIRFLAG) $(LIBDIRFLAG) -DVERBOSE=$(VERBOSE) -DMATHACCEL=$(ACCELNUM) -DDEBUG3D=$(DEBUG3D) -DSUPERLU=$(SUPERLU) -g
 
 # sources, objects, headers and inputs
 
-# Microchannel Files
-UCHANSRC = microchannel.c
-UCHANOBJ = microchannel.$(OEXT)
-UCHANHDR = microchannel.h
-UCHANIN = example.microchannel_config
-
-# Materials Files
-MSRC = materials.c
-MOBJ = materials.$(OEXT)
-MHDR = materials.h
-MIN = test.materials
-
 # HotFloorplan
-FLPSRC	= flp.c flp_desc.c npe.c shape.c
-FLPOBJ	= flp.$(OEXT) flp_desc.$(OEXT) npe.$(OEXT) shape.$(OEXT)
+FLPSRC	= flp.c flp_desc.c npe.c shape.c 
+FLPOBJ	= flp.$(OEXT) flp_desc.$(OEXT) npe.$(OEXT) shape.$(OEXT) 
 FLPHDR	= flp.h npe.h shape.h
 FLPIN = ev6.desc avg.p
 
@@ -149,7 +137,7 @@ FLPIN = ev6.desc avg.p
 TEMPSRC	= temperature.c RCutil.c
 TEMPOBJ	= temperature.$(OEXT) RCutil.$(OEXT)
 TEMPHDR = temperature.h
-TEMPIN	=
+TEMPIN	= 
 
 #	Package model
 PACKSRC	=	package.c
@@ -158,8 +146,8 @@ PACKHDR	=	package.h
 PACKIN	=	package.config
 
 # HotSpot block model
-BLKSRC = temperature_block.c
-BLKOBJ = temperature_block.$(OEXT)
+BLKSRC = temperature_block.c 
+BLKOBJ = temperature_block.$(OEXT) 
 BLKHDR	= temperature_block.h
 BLKIN	= ev6.flp gcc.ptrace
 
@@ -176,14 +164,13 @@ MISCHDR = util.h wire.h
 MISCIN	= hotspot.config
 
 # all objects
-OBJ	= $(UCHANOBJ) $(MOBJ) $(TEMPOBJ) $(PACKOBJ) $(BLKOBJ) $(GRIDOBJ) $(FLPOBJ) $(MISCOBJ)
+OBJ	= $(TEMPOBJ) $(PACKOBJ) $(BLKOBJ) $(GRIDOBJ) $(FLPOBJ) $(MISCOBJ)
 
 # targets
 all:	hotspot hotfloorplan lib
 
 hotspot:	hotspot.$(OEXT) $(OBJ)
 	$(CC) $(CFLAGS) -o hotspot hotspot.$(OEXT) $(OBJ) $(LIBS)
-
 ifdef LIBDIR
 		@echo
 		@echo
@@ -226,3 +213,4 @@ clean:
 
 cleano:
 	$(RM) *.$(OEXT) *.obj
+

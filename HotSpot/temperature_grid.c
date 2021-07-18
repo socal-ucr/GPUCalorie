@@ -1704,14 +1704,12 @@ void xlate_vector_b2g(grid_model_t *model, double *b, grid_model_vector_t *g, in
                                              model->layers[n].flp, &b[base], type) * area;
               
                 if(model->config.model_secondary) {
-                    if (n==5) g->cuboid[n][i][j] += 0.0002655029296875;
-                   // if (n==5&& g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.000070190429687;
-                   // if (n==5&& g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.00;
+                    if (n==5 && g->cuboid[n][i][j] != 0.0) g->cuboid[n][i][j] += 0.0004401866;
+                    if (n==5 && g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.0000882468;
                 }
                 else{
-                    if (n==0) g->cuboid[n][i][j] += 0.0002655029296875;
-                  //  if (n==0) g->cuboid[n][i][j] += 0.000070190429687;
-                    if (n==0) g->cuboid[n][i][j] += 0.00;
+                    if (n==0 && g->cuboid[n][i][j] != 0.0) g->cuboid[n][i][j] += 0.0004401866;
+                    if (n==0 && g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.0000882468;
                 }
                 
             }

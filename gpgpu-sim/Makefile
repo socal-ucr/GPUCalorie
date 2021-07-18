@@ -79,13 +79,13 @@ endif
 GPUCALORIE=
 GPUCALORIE_OBJ_DIR=
 GPUCALORIE_DBG_FLAG=
-export SUPERLU=0
+SUPERLU=1
 ifneq ($(GPGPUSIM_POWER_MODEL),)
    	LIBS += gpucalorie
 
 	SuperLUroot     = /home/mchow009/superlu/build
-	SUPERLULIB      = -L$(SuperLUroot)/lib64 -lsuperlu 
-	BLASLIB         = -L$(SuperLUroot)/lib64 -lblas
+	SUPERLULIB      = -L$(SuperLUroot)/lib64 -lsuperlu -Wl,-rpath=$(SuperLUroot)/lib64 
+	BLASLIB         = -L$(SuperLUroot)/lib64 -lblas -Wl,-rpath=$(SuperLUroot)/lib64
 
 	ifeq ($(DEBUG), 1)
 		GPUCALORIE_DBG_FLAG =

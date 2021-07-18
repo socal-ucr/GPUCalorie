@@ -8,6 +8,7 @@
 # path and flag options
 
 #SUPERLU: [0-1]
+SUPERLU = 1
 ifndef SUPERLU
 SUPERLU = 0
 endif
@@ -15,8 +16,8 @@ endif
 ifeq ($(SUPERLU), 1)
 #Super LU
 SuperLUroot     = /home/mchow009/superlu/build
-SUPERLULIB      = $(SuperLUroot)/lib64/libsuperlu
-BLASLIB         = -L $(SuperLUroot)/lib64 -lblas
+SUPERLULIB      = -L$(SuperLUroot)/lib64/ -lsuperlu -Wl,-rpath=$(SuperLUroot)/lib64
+BLASLIB         = -L$(SuperLUroot)/lib64 -lblas -Wl,-rpath=-L$(SuperLUroot)/lib64/
 SLU_HEADER  = $(SuperLUroot)/include
 
 MATHACCEL	= none

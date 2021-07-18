@@ -54,7 +54,7 @@ void gpu_calorie::cycle(const gpgpu_sim_config &config,class power_stat_t *power
   double elapsed_time = core_period*((double)gpu_stat_sample_freq);
   m_power_interface->cycle(config,power_stats,elapsed_time);
   if(config.g_thermal_simulation_enabled)
-    m_hotspot_wrapper->compute(power_stats,elapsed_time*1e+4);
+    m_hotspot_wrapper->compute(power_stats,elapsed_time);
 }
 
 double gpu_calorie::get_max_chip_temp() {

@@ -233,7 +233,8 @@ void thermal_config::reg_options(class OptionParser * opp)
   option_parser_register(opp, "-flp_block_names", OPT_CSTR,
                            &g_flp_block_names,
                            "flp_block_names",
-                           "SM0,SM1,SM2,SM3,SM4,SM5,L2,MC1,MC2,MC3");
+                           "SM0_EXE_T,SM0_EXE_B,SM0_I_CACHE,SM0_MEM_T,SM0_MEM_B,SM0_REG_FILE,SM0_SHD_MEM,SM1_EXE_T,SM1_EXE_B,SM1_I_CACHE,SM1_MEM_T,SM1_MEM_B,SM1_REG_FILE,SM1_SHD_MEM,SM2_EXE_T,SM2_EXE_B,SM2_I_CACHE,SM2_MEM_T,SM2_MEM_B,SM2_REG_FILE,SM2_SHD_MEM,SM3_EXE_T,SM3_EXE_B,SM3_I_CACHE,SM3_MEM_T,SM3_MEM_B,SM3_REG_FILE,SM3_SHD_MEM,SM4_EXE_T,SM4_EXE_B,SM4_I_CACHE,SM4_MEM_T,SM4_MEM_B,SM4_REG_FILE,SM4_SHD_MEM,SM5_EXE_T,SM5_EXE_B,SM5_I_CACHE,SM5_MEM_T,SM5_MEM_B,SM5_REG_FILE,SM5_SHD_MEM,L2,MC0,MC1,MC2");
+
 
   option_parser_register(opp, "-thermal_simulation_enabled", OPT_BOOL,
                            &g_thermal_simulation_enabled,

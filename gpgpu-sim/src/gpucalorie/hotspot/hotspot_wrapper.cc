@@ -190,75 +190,48 @@ void hotspot_wrapper::compute(class power_stat_t *power_stats,double time_elapse
     update_power(power_stats);
 
     int idx, i, j, base, count;
-
       /* permute the power numbers according to the floorplan order	*/
       if (model->type == BLOCK_MODEL)
         for(i=0; i < num_functional_blocks; i++)
-          power[get_blk_index(flp, names[i])] = vals[i];
+          power[get_blk_index(flp, names[i])] += (vals[i] - power[get_blk_index(flp, names[i])]) / (double)(num_samples+1);
       else
         for(i=0, base=0, count=0; i < model->grid->n_layers; i++) {
             if(model->grid->layers[i].has_power) {
                 for(j=0; j < model->grid->layers[i].flp->n_units; j++) {
                     idx = get_blk_index(model->grid->layers[i].flp, names[count+j]);
-                    power[base+idx] = vals[count+j];
+                    power[base+idx] += (vals[count+j] - power[base+idx]) / (double)(num_samples +1);
                 }
                 count += model->grid->layers[i].flp->n_units;
             }	
             base += model->grid->layers[i].flp->n_units;	
         }
-      /* compute temperature	*/
-      if (do_transient) {
-          /* if natural convection is considered, update transient convection resistance first */
-          if (natural) {
-              avg_sink_temp = calc_sink_temp(model, temp);
-              natural = package_model(model->config, table, size, avg_sink_temp);
-              populate_R_model(model, flp);
-          }
-          /* for the grid model, only the first call to compute_temp
-           * passes a non-null 'temp' array. if 'temp' is  NULL, 
-           * compute_temp remembers it from the last non-null call. 
-           * this is used to maintain the internal grid temperatures 
-           * across multiple calls of compute_temp
-           */
-          if (model->type == BLOCK_MODEL || num_samples == 0)
-            compute_temp(model, power, temp, time_elapsed);
-          else
-            compute_temp(model, power, NULL, time_elapsed);
-
-
-          /* permute back to the trace file order	*/
-          if (model->type == BLOCK_MODEL)
-            for(i=0; i < num_functional_blocks; i++)
-              vals[i] = temp[get_blk_index(flp, names[i])];
-          else
-            for(i=0, base=0, count=0; i < model->grid->n_layers; i++) {
-                if(model->grid->layers[i].has_power) {
-                    for(j=0; j < model->grid->layers[i].flp->n_units; j++) {
-                        idx = get_blk_index(model->grid->layers[i].flp, names[count+j]);
-                        vals[count+j] = temp[base+idx];
-                    }
-                    count += model->grid->layers[i].flp->n_units;	
-                }	
-                base += model->grid->layers[i].flp->n_units;	
-            }
-          /* output instantaneous temperature trace	*/
-          write_vals(tout, vals, num_functional_blocks);
-
-          update_temps(power_stats,vals);
-    }
-
-    if (model->type == BLOCK_MODEL) 
-        for(i=0; i < num_functional_blocks; i++) 
-            overall_power[i] += power[i]; 
-    else 
-        for(i=0, base=0; i < model->grid->n_layers; i++) { 
-            if(model->grid->layers[i].has_power) 
-                for(j=0; j < model->grid->layers[i].flp->n_units; j++) 
-                    overall_power[base+j] += power[base+j]; 
-            base += model->grid->layers[i].flp->n_units;         
-       }
     
+
     num_samples++;
+
+    if( num_samples % 20 == 0) {
+        //Compute steady state temps
+        steady_state_temp(model, power, temp);
+        write_vals(tout, temp, num_functional_blocks);
+        update_temps(power_stats,temp);
+
+        num_samples = 0;
+        /* reset stats*/
+        if (model->type == BLOCK_MODEL)
+        for(i=0; i < num_functional_blocks; i++)
+          power[get_blk_index(flp, names[i])] = 0.0f;
+        else
+        for(i=0, base=0, count=0; i < model->grid->n_layers; i++) {
+            if(model->grid->layers[i].has_power) {
+                for(j=0; j < model->grid->layers[i].flp->n_units; j++) {
+                    idx = get_blk_index(model->grid->layers[i].flp, names[count+j]);
+                    power[base+idx] = 0.0f;
+                }
+                count += model->grid->layers[i].flp->n_units;
+            }	
+            base += model->grid->layers[i].flp->n_units;	
+        }
+    }
 }
 
 double hotspot_wrapper::find_max_temp() {

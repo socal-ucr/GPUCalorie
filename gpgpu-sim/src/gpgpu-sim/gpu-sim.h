@@ -175,6 +175,7 @@ class thermal_config {
     char *g_floorplan_input_file;
     char *g_thermal_config_file;
     char *g_flp_block_names;
+    int  g_num_flp_blocks;
     bool g_thermal_simulation_enabled;
     bool g_thermal_trace_enabled;
     bool g_dtm_enabled;

@@ -174,22 +174,14 @@ void hotspot_wrapper::init(const gpgpu_sim_config &config) {
 }
 
 void hotspot_wrapper::update_power(class power_stat_t *power_stats) {
-    for(unsigned i =0;i < num_shaders;i++)
-        vals[i] = power_stats->get_sm_power(i);
-
-    vals[num_shaders] = power_stats->get_l2_power();
-    vals[num_shaders+1] = power_stats->get_dram_power();
-    vals[num_shaders+2] = power_stats->get_dram_power();
-    vals[num_shaders+3] = power_stats->get_dram_power();
+    for(unsigned i =0;i < num_functional_blocks;i++)
+        vals[i] = power_stats->get_power(i);
     return;
 }
 
 void hotspot_wrapper::update_temps(class power_stat_t *power_stats, double *vals) {
-    for(unsigned i =0;i < num_shaders;i++)
-        power_stats->set_sm_temps(vals[i],i);
-
-    power_stats->set_l2_temps(vals[num_shaders]);
-    power_stats->set_dram_temps(vals[num_shaders+1]);
+    for(unsigned i =0;i < num_functional_blocks;i++)
+        power_stats->set_temp(vals[i],i);
     return;
 }
 
@@ -214,7 +206,6 @@ void hotspot_wrapper::compute(class power_stat_t *power_stats,double time_elapse
             }	
             base += model->grid->layers[i].flp->n_units;	
         }
-
       /* compute temperature	*/
       if (do_transient) {
           /* if natural convection is considered, update transient convection resistance first */

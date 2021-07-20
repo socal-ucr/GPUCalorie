@@ -1527,6 +1527,9 @@ class shader_core_config : public core_config {
   int gpgpu_max_insn_issue_per_warp;
   bool gpgpu_dual_issue_diff_exec_units;
 
+  //thermal floorplan blocks
+  unsigned g_num_flp_blocks;
+
   // op collector
   bool enable_specialized_operand_collector;
   int gpgpu_operand_collector_num_units_sp;
@@ -1658,9 +1661,6 @@ struct shader_core_stats_pod {
   unsigned *m_sfu_cntr;
   unsigned *m_rf_cntr; 
   //</AliJahan>
-  
-  double   *m_sm_power;
-  double   *m_sm_temp;
   
   unsigned gpgpu_n_load_insn;
   unsigned gpgpu_n_store_insn;
@@ -1814,11 +1814,6 @@ class shader_core_stats : public shader_core_stats_pod {
     m_rf_cntr = 
         (unsigned*) calloc(config->num_shader(),sizeof(unsigned));
     //</AliJahan>
-
-    m_sm_power = 
-        (double*) calloc(config->num_shader(),sizeof(double));
-    m_sm_temp = 
-        (double*) calloc(config->num_shader(),sizeof(double));
 
     n_simt_to_mem = (long *)calloc(config->num_shader(), sizeof(long));
     n_mem_to_simt = (long *)calloc(config->num_shader(), sizeof(long));

@@ -1703,14 +1703,14 @@ void xlate_vector_b2g(grid_model_t *model, double *b, grid_model_vector_t *g, in
             if (type == V_POWER) {
               g->cuboid[n][i][j] = blist_avg(model->layers[n].b2gmap[i][j], 
                                              model->layers[n].flp, &b[base], type) * area;
-              if(model->config.model_secondary) {
-                if (n==5 && g->cuboid[n][i][j] != 0.0) g->cuboid[n][i][j] += 0.0004401866;
-                if (n==5 && g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.0000882468;
-              }
-              else{
-                if (n==0 && g->cuboid[n][i][j] != 0.0) g->cuboid[n][i][j] += 0.0004401866;
-                if (n==0 && g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.0000882468;
-               }
+                if(model->config.model_secondary) {
+                    if (n==5 && g->cuboid[n][i][j] != 0.0) g->cuboid[n][i][j] += 0.0001882468;
+                    if (n==5 && g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.0001211678;
+                }
+                else{
+                    if (n==0 && g->cuboid[n][i][j] != 0.0) g->cuboid[n][i][j] += 0.0001882468;
+                    if (n==0 && g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.0001211678;
+                }
             }
             /* no conversion necessary for temperature	*/ 
             else if (type == V_TEMP) {
@@ -3158,6 +3158,7 @@ void compute_temp_grid(grid_model_t *model, double *power, double *temp, double 
                   (slope_fn_ptr) slope_fn_grid);
       new_h = MIN(new_h, time_elapsed-t-h);
 //#if VERBOSE > 1
+      printf("step: %d\n",i);
       i++;
 //#endif	
   }

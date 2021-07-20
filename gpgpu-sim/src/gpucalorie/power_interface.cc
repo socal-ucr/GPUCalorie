@@ -87,7 +87,7 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
         open_files();
 
     //TODO: Make this dyanimc
-    double vals[46]; //we have 10 blocks in floorplan 
+    double vals[46]; //we have 
     int numComponents = 7;
 
     gzprintf(power_trace_file,"%.10e,",core_period);
@@ -102,10 +102,10 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
         unsigned nb_rf = power_stats->get_tot_rf_accessess(SM);
         unsigned l1 = power_stats->get_l1d_hits(SM);
         unsigned shd_mem = power_stats->get_shmem_read_access(SM);
-       
+         
         //calculate power
        
-        double decode_p = ((double)decode * config.decode_epa * 32.0) / core_period;
+        double decode_p = ((double)decode * config.decode_epa) / core_period;
         double alu_p = ((double)alu * config.alu_epa) / core_period;
         double fp_p = ((double)fp * config.fp_epa) / core_period;
         double dp_p = ((double)dp * config.dp_epa) / core_period;
@@ -141,6 +141,8 @@ void power_interface::cycle(const gpgpu_sim_config &config, class power_stat_t *
 
     vals[(6*numComponents)+0] = l2_p;
     vals[(6*numComponents)+1] = (dram_p/3.0);
+    vals[(6*numComponents)+2] = (dram_p/3.0);
+    vals[(6*numComponents)+3] = (dram_p/3.0);
 
     power_stats->save_stats();
     power_stats->update_power(vals);

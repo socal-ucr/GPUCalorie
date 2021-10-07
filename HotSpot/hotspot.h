@@ -8,6 +8,8 @@ typedef struct global_config_t_st
 {
 	/* floorplan input file */
 	char flp_file[STR_SIZE];
+	/* idle power input file */
+	char idle_file[STR_SIZE];
 	/* input power trace file */
 	char p_infile[STR_SIZE];
 	/* output file for the temperature trace */

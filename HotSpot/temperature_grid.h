@@ -170,6 +170,7 @@ typedef struct grid_model_t_st
   grid_model_vector_t *last_trans;
   /* block temperatures	*/
   double *last_temp;
+  double *idle_power;
 
   /* to allow for resizing	*/
   int base_n_units;

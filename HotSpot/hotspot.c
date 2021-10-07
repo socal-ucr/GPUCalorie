@@ -125,6 +125,12 @@ void global_config_from_strs(global_config_t *config, str_pair *table, int size)
   } else {
       strcpy(config->detailed_3D, "off");
   }
+  if ((idx = get_str_index(table, size, "i")) >= 0) {
+      if(sscanf(table[idx].value, "%s", config->idle_file) != 1)	
+        fatal("invalid format for configuration  parameter lc\n");
+  } else {
+      strcpy(config->detailed_3D, "off");
+  }
 }
 
 /* 
@@ -223,6 +229,40 @@ int read_vals(FILE *fp, double *vals)
   return i;
 }
 
+/* read a single line of power trace numbers	*/
+int read_idle(FILE *fp, double *vals)
+{
+  int i = 0;
+while(!feof(fp)) {
+  char line[LINE_SIZE], temp[LINE_SIZE], *src;
+  /* skip empty lines	*/
+  do {
+      /* read the entire line	*/
+      fgets(line, LINE_SIZE, fp);
+      if (feof(fp))
+        return 0;
+      strcpy(temp, line);
+      src = strtok(temp, " \r\t\n");
+  } while (!src);
+
+  /* new line not read yet	*/	
+  if(line[strlen(line)-1] != '\n')
+    fatal("line too long\n");
+
+  /* chop the power values from the line read	*/
+  for(src=line; *src; i++) {
+      if(!sscanf(src, "%s", temp) || !sscanf(src, "%lf", &vals[i]))
+        fatal("invalid format of values\n");
+      src += strlen(temp);
+      while (isspace((int)*src))
+        src++;
+  }
+
+}
+
+  return i;
+}
+
 /* write a single line of functional unit names	*/
 void write_names(FILE *fp, char **names, int size)
 {
@@ -282,7 +322,7 @@ int main(int argc, char **argv)
   char **names;
   double *vals;
   /* trace file pointers	*/
-  FILE *pin, *tout = NULL;
+  FILE *pin, *tout, *idle_in = NULL;
   /* floorplan	*/
   flp_t *flp;
   /* hotspot temperature model	*/
@@ -411,6 +451,14 @@ int main(int argc, char **argv)
       for(i=0; i < model->grid->n_layers; i++)
         if (model->grid->layers[i].has_power)
           n += model->grid->layers[i].flp->n_units;
+
+    //Input idle power
+    model->grid->idle_power = dvector(256*256);
+    if(!(idle_in = fopen(global_config.idle_file, "r")))
+        fatal("unable to open idle power input file\n");
+     
+    read_idle(idle_in,model->grid->idle_power);
+    
   } else 
     fatal("unknown model type\n");
 

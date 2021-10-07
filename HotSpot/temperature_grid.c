@@ -1677,6 +1677,7 @@ void free_grid_model_vector(grid_model_vector_t *v)
   free(v);
 }
 
+
 /* translate power/temperature between block and grid vectors	*/
 void xlate_vector_b2g(grid_model_t *model, double *b, grid_model_vector_t *g, int type)
 {
@@ -1704,12 +1705,10 @@ void xlate_vector_b2g(grid_model_t *model, double *b, grid_model_vector_t *g, in
                                              model->layers[n].flp, &b[base], type) * area;
               
                 if(model->config.model_secondary) {
-                    if (n==5 && g->cuboid[n][i][j] != 0.0) g->cuboid[n][i][j] += 0.0001882468;
-                    if (n==5 && g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.0001211678;
+                    if (n==5) g->cuboid[n][i][j] += (model->idle_power[(model->cols * i) + j] * 17.4);
                 }
                 else{
-                    if (n==0 && g->cuboid[n][i][j] != 0.0) g->cuboid[n][i][j] += 0.0001882468;
-                    if (n==0 && g->cuboid[n][i][j] == 0.0) g->cuboid[n][i][j] += 0.0001211678;
+                    if (n==0) g->cuboid[n][i][j] += (model->idle_power[(model->cols * i) + j] * 17.4);
                 }
                 
             }

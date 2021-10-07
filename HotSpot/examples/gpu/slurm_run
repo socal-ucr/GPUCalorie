@@ -22,6 +22,6 @@ POWER_DIR=ptraces
 OUT_DIR=outputs
 
 
-../../hotspot -c configs/${CONFIG}.config  -f floorplans/${flp}.flp -p ${POWER_DIR}/${bm}.ptrace -materials_file example.materials -steady_file ${OUT_DIR}/${bm}.steady -model_type grid -grid_steady_file ${OUT_DIR}/${bm}.grid.steady
-cp ${OUT_DIR}/${bm}.steady ${OUT_DIR}/${bm}.init
-../../hotspot -c configs/${CONFIG}.config  -init_file ${OUT_DIR}/${bm}.init -f floorplans/${flp}.flp -p ${POWER_DIR}/${bm}.ptrace -materials_file example.materials -steady_file ${OUT_DIR}/${bm}.steady -model_type grid -grid_steady_file ${OUT_DIR}/${bm}.grid.steady
+../../hotspot -c configs/${CONFIG}.config  -f floorplans/${flp}.flp -i configs/activeIdle.csv -p ${POWER_DIR}/${bm}.ptrace -materials_file example.materials -steady_file ${OUT_DIR}/${bm}.steady -model_type grid -grid_steady_file ${OUT_DIR}/${bm}.grid.steady
+#cp ${OUT_DIR}/${bm}.steady ${OUT_DIR}/${bm}.init
+#../../hotspot -c configs/${CONFIG}.config  -init_file ${OUT_DIR}/${bm}.init -f floorplans/${flp}.flp -i configs/activeIdle.csv -p ${POWER_DIR}/${bm}.ptrace -materials_file example.materials -steady_file ${OUT_DIR}/${bm}.steady -model_type grid -grid_steady_file ${OUT_DIR}/${bm}.grid.steady

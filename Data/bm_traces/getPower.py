@@ -52,9 +52,10 @@ labels[-4] = (chip_components[-4])
 
 writer.writerow(labels)
 
-MAX_LINES = 100000
+MAX_LINES = 50000
 N = 0
 period = Decimal('2.7639579878e-07')
+avgPower = Decimal(0.0);
 try:
     with gzip.open(filename,'r') as fin:
         next(fin)
@@ -64,7 +65,7 @@ try:
             line = line.decode("utf-8").split(',')
             row = [None] * ((6*len(sm_components))+ len(chip_components));
             for sm in range(0,numSM):
-                ic  = Decimal(line[(sm*numepis)+0]) * EPIS["T_DECODE"] 
+                ic  = Decimal(line[(sm*numepis)+0]) * EPIS["T_DECODE"]
                 alu =(Decimal(line[(sm*numepis)+1]) * EPIS["T_ALU"] +  
                       Decimal(line[(sm*numepis)+2]) * EPIS["T_FP"] +  
                       Decimal(line[(sm*numepis)+3]) * EPIS["T_DP"] +  
@@ -81,7 +82,7 @@ try:
                 row[(sm*numComponents)+4]  = (ls / Decimal(2.0)) / period
                 row[(sm*numComponents)+5]  = reg / period
                 row[(sm*numComponents)+6]  = shd / period
-                N+=1
+
 
             l2   = (Decimal(line[-2]) * EPIS["L2"])
             dram = (Decimal(line[-1]) * EPIS["MEM"])
@@ -90,6 +91,13 @@ try:
             row[-3] = (dram / Decimal(3.0)) / period
             row[-4] = l2 / period
             writer.writerow(row)
+            samplePower = Decimal(0)
+            for i in range((6*len(sm_components)) + len(chip_components)):
+                samplePower = samplePower + row[i]
+
+            avgPower = avgPower + ((samplePower - avgPower) / (N+1))
+            N+=1
+        print(avgPower)
 
 except FileNotFoundError:
     print("FileNotFound: "+filename)

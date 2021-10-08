@@ -1706,6 +1706,7 @@ void xlate_vector_b2g(grid_model_t *model, double *b, grid_model_vector_t *g, in
               
                 if(model->config.model_secondary) {
                     if (n==5) g->cuboid[n][i][j] += (model->idle_power[(model->cols * i) + j] * 17.4);
+                    //if (n==5) g->cuboid[n][i][j] += (0.000015258789063 * 17.4);
                 }
                 else{
                     if (n==0) g->cuboid[n][i][j] += (model->idle_power[(model->cols * i) + j] * 17.4);
@@ -2436,6 +2437,9 @@ double single_iteration_steady_grid(grid_model_t *model, grid_model_vector_t *po
               /* update the current cell's temperature	*/	   
               prev = v[n][i][j];
               v[n][i][j] = (power->cuboid[n][i][j] + wsum) / csum;
+              // DW: Hack modeling of peltier device. PCB level is constant lower temperature.
+              //if ((n==pcbidx) && model->config.model_secondary)
+              //  v[n][i][j] = 300.00;
 
               /* compute maximum delta	*/
               delta =  fabs(prev - v[n][i][j]);
@@ -2574,6 +2578,7 @@ void multigrid_prolong_temp(grid_model_t *model, grid_model_vector_t *dst,
 void recursive_multigrid(grid_model_t *model, grid_model_vector_t *power,
                          grid_model_vector_t *temp)
 {
+  printf("DW: Recursive multigrid \n");
   double delta;
 #if VERBOSE > 1
   unsigned int i = 0;
@@ -3167,7 +3172,7 @@ void compute_temp_grid(grid_model_t *model, double *power, double *temp, double 
 
   /* map the temperature numbers back	*/
   xlate_temp_g2b(model, model->last_temp, model->last_trans);
-
+  printf("DW: Compute Temp Grid\n");
   free_grid_model_vector(p);
 }
 
